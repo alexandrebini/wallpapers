@@ -1,0 +1,15 @@
+*.DS_Store
+*.rdb
+.bundle
+.gitconfig
+.sass-cache
+_site
+log/*
+public/assets*
+public/system
+shared
+shared/*
+Thumbs.db
+tmp/*
+vendor/cache
+vendor/gem
