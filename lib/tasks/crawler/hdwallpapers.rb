@@ -8,6 +8,7 @@ module Crawler
     end
 
     def initialize
+      Thread.abort_on_exception = true
       @listing_pages = []
       @wallpaper_threads = []
       @total = 0
@@ -47,11 +48,9 @@ module Crawler
         links = page.css('ul.wallpapers li a')
         @total += links.size
 
-        links.each_slice(4) do |links_slice|
-          @wallpaper_threads << Thread.new do
-            links_slice.each do |link|
-              crawl_wallpaper "#{ @home_url }#{ link.attr(:href) }"
-            end
+        @wallpaper_threads << Thread.new do
+          links.each do |link|
+            crawl_wallpaper "#{ @home_url }#{ link.attr(:href) }"
           end
         end
       end
@@ -87,25 +86,7 @@ module Crawler
 
       def parse_image(page)
         bigger_resolution = { width: 0, url: nil }
-        page.css('.wallpaper-resolutions a').each do |link|
-          if link.content == 'Original'
-            bigger_resolution = { width: 'original', url: link.attr(:href) }
-            break
-          else
-            width = link.content.split('x').first.to_i
-            if width > bigger_resolution[:width]
-              bigger_resolution = { width: width, url: link.attr(:href) }
-            end
-          end
-        end
-
-        if bigger_resolution[:url].match(/(.jpg|.png)$/)
-          path = bigger_resolution[:url]
-        else
-          # /view/2013_grand_theft_auto_gta_v-2560x1440.html =>
-          # /wallpapers/2013_grand_theft_auto_gta_v-1280x800.jpg
-          path = bigger_resolution[:url].gsub('/view/', '/wallpapers').gsub('.html', '.jpg')
-        end
+        path = page.css('.thumbbg1 a').first.attr(:href)
 
         return "#{ @home_url }#{ path }"
       end

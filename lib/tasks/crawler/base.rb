@@ -17,15 +17,15 @@ module Crawler
 
     class << self
       def open_url(url)
+        @denied_proxies ||= []
         @error_logger ||= Logger.new("#{ Rails.root }/log/crawler_error.log")
+
         begin
           proxy = Crawler::Base.proxy
           open(url, proxy: proxy)
-        rescue OpenURI::HTTPError => e
-          @error_logger << "\n#{ e.to_s }. #{ proxy } Trying a new proxy..."
-          retry
         rescue Exception => e
-          @error_logger << "\n#{ e.to_s }. #{ proxy }"
+          @error_logger << "\n#{ proxy } #{ e.to_s }. Trying a new proxy..."
+          @denied_proxies << proxy
           retry
         end
       end
@@ -41,7 +41,7 @@ module Crawler
           200.208.251.210:8080
           200.182.190.146:8080
         )
-        return "http://#{ list.sample }"
+        return "http://#{ (list - @denied_proxies.to_a).sample }"
       end
     end
   end
