@@ -2,8 +2,28 @@ module Crawler
   class Base
     require 'nokogiri'
     require 'open-uri'
+    require 'net/http'
+    require 'csv'
 
-    attr_accessor :home_url
+    attr_accessor :home_url, :listing_pages, :wallpaper_threads
+
+    def initialize(options)
+      Wallpapers::Application.config.threadsafe!
+      Thread.abort_on_exception = true
+      @listing_pages = []
+      @wallpaper_threads = []
+      @total = 0
+      @count = 0
+      @home_url = options[:home_url]
+      @verification_matcher = options[:verification_matcher]
+    end
+
+    def start!
+      page = Nokogiri::HTML(open_url @home_url)
+      get_listing_pages(page)
+      get_wallpapers
+      self
+    end
 
     def log(args)
       @logger ||= Logger.new("#{ Rails.root }/log/#{ URI.parse(@home_url).host }.log")
@@ -11,54 +31,125 @@ module Crawler
       puts args
     end
 
+    def fail_log(args)
+      @fail_logger ||= Logger.new("#{ Rails.root }/log/#{ URI.parse(@home_url).host }.fail.log")
+      @fail_logger << args
+      @fail_logger << "\n"
+    end
+
     def open_url(url)
-      Crawler::Base.open_url(url)
+      Crawler::Base.open_url(url, @verification_matcher)
+    end
+
+    def get_listing_pages(page)
+      slice_size = @listing_pages.size > 4 ? @listing_pages.size/4 : @listing_pages.size
+
+      @listing_pages.each_slice(slice_size).map do |pages|
+        Thread.new do
+          pages.each{ |page| crawl_listing_page(page) }
+        end
+      end.each(&:join)
+    end
+
+    def crawl_wallpapers(links)
+      @total += links.size
+      slice_size = links.size > 4 ? links.size/4 : links.size
+
+      if links.size == 0
+        puts "######## fuuuuu", url, page
+        puts "########"
+      end
+
+      links.each_slice(slice_size).each do |links_slice|
+        @wallpaper_threads << Thread.new do
+          links_slice.each { |link| crawl_wallpaper(link) }
+        end
+      end
+    end
+
+    def get_wallpapers
+      @wallpaper_threads.each(&:join)
+    end
+
+    def crawl_listing_page(url)
+      log "\ncrawling a list of wallpapers from #{ url }"
+      begin
+        Nokogiri::HTML(open_url url)
+      rescue
+        log "\nerror on crawling #{ url }. Trying again..."
+        retry
+      end
+    end
+
+    def crawl_wallpaper(link)
+      throw 'you should implement crawl_wallpaper method'
     end
 
     class << self
-      def open_url(url)
+      def start!
+        self.new.start!
+      end
+
+      def open_url(url, verification_matcher=nil)
         @denied_proxies ||= []
+        max_attempts = 10
+        attempts = 0
 
         begin
           proxy = Crawler::Base.proxy
-          io = open(url, proxy: proxy)
-          file = io.read
-          io.close
-          return file
+          proxy_uri = URI.parse(proxy)
+          uri = URI.parse(url)
+          body = ''
+
+          Net::HTTP::Proxy(proxy_uri.host, proxy_uri.port).start(uri.host) do |http|
+            request = Net::HTTP::Get.new(uri.request_uri)
+            response = http.request(request)
+            unless response.kind_of?(Net::HTTPRedirection)
+              if verification_matcher
+                body = response.body if response.body.index(verification_matcher)
+              else
+                body = response.body
+              end
+            end
+            http.finish
+          end
+
+          throw "Body is nil for #{ url }" if body.blank?
+
+          # proxy = Crawler::Base.proxy
+          # # io = open(url, proxy: proxy)
+          # response = io.read
+          # io.close
+
+          GC.start
+          return body
         rescue Exception => e
           error_logger "\n#{ proxy } #{ e.to_s }. Trying a new proxy..."
           @denied_proxies << proxy unless @denied_proxies.include?(proxy)
-          retry
+          attempts += 1
+          retry unless attempts >= max_attempts
         end
       end
 
       def proxy
-        # list = %w(
-        #   189.80.168.162:8080
-        #   186.225.129.162:3128
-        #   177.19.217.220:8080
-        #   187.6.254.19:3128
-        #   200.205.218.149:3128
-        #   177.99.172.82:8080
-        #   200.208.251.210:8080
-        #   200.182.190.146:8080
-        # )
-        p @proxy_list, @denied_proxies.to_a, (@proxy_list.to_a - @denied_proxies.to_a)
-        puts
+        available_proxies = (@proxy_list.to_a - @denied_proxies.to_a)
 
-        if @proxy_list.nil? || (@proxy_list.to_a - @denied_proxies.to_a).size == 0
+        if @proxy_list.nil? || available_proxies.size == 0
           error_logger "\nGetting a new proxy list..."
-          # file = open('http://www.xroxy.com/proxylist.php?port=80&type=All_http&ssl=nossl&country=BR&latency=&reliability=#table')
-          # file = open('http://www.xroxy.com/proxylist.php?port=80&type=All_http&ssl=nossl&latency=&reliability=#table')
-          # file = open('http://www.xroxy.com/proxylist.php?port=80&type=All_http&ssl=nossl&country=&latency=1000&reliability=9000#table')
-          file = open('http://www.xroxy.com/proxylist.php?port=80&type=All_http&ssl=nossl&country=US&latency=1000&reliability=9000#table')
-          doc = Nokogiri::HTML(file)
-          file.close
+          @denied_proxies = []
+          @proxy_list = []
 
-          @proxy_list = doc.css('tr.row0, tr.row1').map do |tr|
-            ip = tr.css('td')[1].content.gsub('\n', '').strip
-            port = tr.css('td')[2].content.to_i
-            "http://#{ ip }:#{ port }"
+          # get from http://www.checkedproxylists.com/
+          CSV.open("#{ Rails.root }/config/proxylist.csv", col_sep: ';').each do |row|
+            next if row[3] == 'true'
+            ip = row[0].strip
+            port = row[1].to_i
+            url = "http://#{ ip }:#{ port }"
+            begin
+              URI.parse(url)
+              @proxy_list << url
+            rescue
+            end
           end
         end
 
