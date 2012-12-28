@@ -5,5 +5,5 @@ class Tag < ActiveRecord::Base
   friendly_id :name, use: :globalize
 
   # associations
-  has_and_belongs_to_many :wallpapers
+  has_and_belongs_to_many :wallpapers, join_table: :wallpapers_tags
 end

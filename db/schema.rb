@@ -34,7 +34,10 @@ ActiveRecord::Schema.define(:version => 5) do
   create_table "tags", :force => true do |t|
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
+    t.string   "slug"
   end
+
+  add_index "tags", ["slug"], :name => "index_tags_on_slug"
 
   create_table "wallpaper_translations", :force => true do |t|
     t.integer  "wallpaper_id"
@@ -50,9 +53,18 @@ ActiveRecord::Schema.define(:version => 5) do
 
   create_table "wallpapers", :force => true do |t|
     t.string   "source"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.string   "slug"
+    t.string   "image_file_name"
+    t.string   "image_content_type"
+    t.integer  "image_file_size"
+    t.datetime "image_updated_at"
+    t.string   "image_fingerprint"
+    t.datetime "created_at",         :null => false
+    t.datetime "updated_at",         :null => false
   end
+
+  add_index "wallpapers", ["created_at"], :name => "index_wallpapers_on_created_at"
+  add_index "wallpapers", ["slug"], :name => "index_wallpapers_on_slug"
 
   create_table "wallpapers_colors", :id => false, :force => true do |t|
     t.integer "wallpaper_id"

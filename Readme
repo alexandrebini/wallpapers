@@ -1,0 +1,3 @@
+# resque workers
+  redis-server &
+  QUEUE=* rake resque:work
