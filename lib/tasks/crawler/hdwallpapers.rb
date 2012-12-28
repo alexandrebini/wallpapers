@@ -34,11 +34,15 @@ module Crawler
           @listing_pages << "#{ @home_url }/latest_wallpapers/page/#{ page }"
         end
 
-        @listing_pages.each_slice(50).map do |pages|
+        @listing_pages.each_slice(@listing_pages.size/4).map do |pages|
           Thread.new do
             pages.each{ |page| crawl_listing_page(page) }
           end
         end.each(&:join)
+
+        # @listing_pages.each do |page|
+        #   crawl_listing_page(page)
+        # end
       end
 
       def crawl_listing_page(url)
@@ -48,9 +52,16 @@ module Crawler
         links = page.css('ul.wallpapers li a')
         @total += links.size
 
-        @wallpaper_threads << Thread.new do
-          links.each do |link|
-            crawl_wallpaper "#{ @home_url }#{ link.attr(:href) }"
+        # @wallpaper_threads << Thread.new do
+        #   links.each do |link|
+        #     crawl_wallpaper "#{ @home_url }#{ link.attr(:href) }"
+        #   end
+        # end
+        links.each_slice(links.size/4).each do |links_slice|
+          @wallpaper_threads << Thread.new do
+            links_slice.each do |link|
+              crawl_wallpaper "#{ @home_url }#{ link.attr(:href) }"
+            end
           end
         end
       end
@@ -60,16 +71,15 @@ module Crawler
       end
 
       def crawl_wallpaper(url)
+        log "\ncrawling wallpaper #{ @count += 1 }/#{ @total } from #{ url }"
         page = Nokogiri::HTML(open_url url)
 
-        wallpaper = Wallpaper.new(
+        wallpaper = Wallpaper.create(
           image_url: parse_image(page),
           source: @home_url,
           tags: parse_tags(page),
           title: parse_title(page)
         )
-
-        log "\ncrawling wallpaper #{ @count += 1 }/#{ @total } from #{ url }\t#{ wallpaper.save } #{ wallpaper.id }"
       end
 
       def parse_title(page)
@@ -85,8 +95,30 @@ module Crawler
       end
 
       def parse_image(page)
-        bigger_resolution = { width: 0, url: nil }
-        path = page.css('.thumbbg1 a').first.attr(:href)
+        if page.css('.thumbbg1 a').first
+          path = page.css('.thumbbg1 a').first.attr(:href)
+        else
+          bigger_resolution = { width: 0, url: nil }
+          page.css('.wallpaper-resolutions a').each do |link|
+            if link.content == 'Original'
+              bigger_resolution = { width: 'original', url: link.attr(:href) }
+              break
+            else
+              width = link.content.split('x').first.to_i
+              if width > bigger_resolution[:width]
+                bigger_resolution = { width: width, url: link.attr(:href) }
+              end
+            end
+          end
+
+          if bigger_resolution[:url].match(/(.jpg|.png)$/)
+            path = bigger_resolution[:url]
+          else
+            # /view/2013_grand_theft_auto_gta_v-2560x1440.html =>
+            # /wallpapers/2013_grand_theft_auto_gta_v-1280x800.jpg
+            path = bigger_resolution[:url].gsub('/view/', '/wallpapers').gsub('.html', '.jpg')
+          end
+        end
 
         return "#{ @home_url }#{ path }"
       end

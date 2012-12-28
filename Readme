@@ -1,3 +1,7 @@
 # resque workers
   redis-server &
   QUEUE=* rake resque:work
+
+# you may need to tuning your mysql
+  mysql -u root
+  SET GLOBAL max_connections = 10000;
