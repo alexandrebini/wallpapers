@@ -55,5 +55,8 @@ module Wallpapers
     config.assets.version = '1.0'
 
     config.active_record.timestamped_migrations = false
+
+    Miro.options[:color_count] = 4
+    Miro.options[:image_magick_path] = '/usr/local/bin/convert'
   end
 end

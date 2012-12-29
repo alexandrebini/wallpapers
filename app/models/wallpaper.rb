@@ -18,9 +18,17 @@ class Wallpaper < ActiveRecord::Base
 
   # callbacks
   after_create :download_image
+  after_save :analyse_colors
 
   private
   def download_image
     Resque.enqueue(WallpaperDownload, id, image_url) if image_url
+  end
+
+  def analyse_colors
+    Miro::DominantColors.new(image.path).to_hex.each do |hex|
+      color = Color.find_or_create_by_hex(hex)
+      colors << color unless colors.exists?(color)
+    end
   end
 end
