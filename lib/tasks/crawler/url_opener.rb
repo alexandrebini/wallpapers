@@ -59,13 +59,14 @@ module Crawler
       end
 
       def response_is_valid?(http, uri, options={})
+        attempts = 0
         request = Net::HTTP::Get.new(uri.request_uri)
         response = http.request(request)
 
-        unless response.kind_of?(Net::HTTPRedirection)
-          if body_is_valid?(response.body, options[:verification_matcher])
-            body = response.body
-          end
+        if response.kind_of?(Net::HTTPSuccess) && body_is_valid?(response.body, options[:verification_matcher])
+          return response.body
+        else
+          return nil
         end
       end
 
