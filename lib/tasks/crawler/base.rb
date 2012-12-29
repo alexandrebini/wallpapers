@@ -9,7 +9,9 @@ module Crawler
 
     def initialize(options)
       Wallpapers::Application.config.threadsafe!
+      Wallpaper.connection.execute "SET GLOBAL max_connections = 10000000;"
       Thread.abort_on_exception = true
+
       @listing_pages = []
       @wallpaper_threads = []
       @total = 0

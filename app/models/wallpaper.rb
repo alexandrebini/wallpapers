@@ -26,6 +26,7 @@ class Wallpaper < ActiveRecord::Base
   end
 
   def analyse_colors
+    return unless image.present? && File.exists?(image.path)
     Miro::DominantColors.new(image.path).to_hex.each do |hex|
       color = Color.find_or_create_by_hex(hex)
       colors << color unless colors.exists?(color)
