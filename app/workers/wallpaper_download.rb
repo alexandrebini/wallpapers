@@ -9,7 +9,6 @@ class WallpaperDownload
       filename = image_url[image_url.rindex('/')+1..-1]
 
       file = StringIO.new(open_url image_url, proxy: false)
-      p file
 
       wallpaper.image = file
       wallpaper.image_file_name = filename
