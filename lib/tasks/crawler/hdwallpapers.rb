@@ -39,7 +39,7 @@ module Crawler
         title: parse_title(page)
       )
     rescue Exception => e
-      fail_log "\n#{ url }\n#{ e.to_s }\n" + e.backtrace.join("\n") + "\n#{ page }"
+      fail_log "\n#{ url }\t#{ e.to_s }\n"
     end
 
     def parse_title(page)

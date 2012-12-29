@@ -9,7 +9,6 @@ module Crawler
 
     def get_listing_pages(page)
       total_pages = page.css('.pageinfoen div').first.content.to_i
-      # total_pages = 3
 
       @listing_pages << @home_url
       2.upto(total_pages).each do |page|
@@ -38,11 +37,10 @@ module Crawler
         title: parse_title(page)
       )
     rescue Exception => e
-      fail_log "\n#{ url }\n#{ e.to_s }\n" + e.backtrace.join("\n") + "\n#{ page }"
+      fail_log "\n#{ url }\t#{ e.to_s }\n"
     end
 
     def parse_title(page)
-
     end
 
     def parse_tags(page)
@@ -56,6 +54,5 @@ module Crawler
       resolution = page.xpath('/html/body/div[1]/div[9]/div[2]/div/table/tr/td[3]/a').first.content.strip
       "http://wallpaper.goodfon.com/image/#{ id }-#{ resolution }.jpg"
     end
-
   end
 end

@@ -42,7 +42,7 @@ module Crawler
         attempts += 1
         retry unless attempts >= options[:max_attempts]
       ensure
-        http.finish
+        http.finish if http
       end
 
       def open_url_without_proxy(uri, options)
