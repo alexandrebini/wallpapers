@@ -14,9 +14,19 @@ module Crawler
         options = { max_attempts: 10, proxy: false }.merge(options)
 
         if options[:proxy] == false
+          # when we are not using a proxy, in 10% of cases I want to reset the
+          # denied_host to give it a new chance because some servers may block
+          # our ip just for some minutes
+          @denied_host = false if rand(10) == 0
+
           begin # try without proxy first
-            open_url_without_proxy(uri, options)
+            if @denied_host
+              throw "go to open with proxy"
+            else
+              open_url_without_proxy(uri, options)
+            end
           rescue # if does not work, try with proxy
+            @denied_host = true
             open_url_with_proxy(uri, options)
           end
         else
@@ -59,13 +69,14 @@ module Crawler
       end
 
       def response_is_valid?(http, uri, options={})
+        attempts = 0
         request = Net::HTTP::Get.new(uri.request_uri)
         response = http.request(request)
 
-        unless response.kind_of?(Net::HTTPRedirection)
-          if body_is_valid?(response.body, options[:verification_matcher])
-            body = response.body
-          end
+        if response.kind_of?(Net::HTTPSuccess) && body_is_valid?(response.body, options[:verification_matcher])
+          return response.body
+        else
+          return nil
         end
       end
 
