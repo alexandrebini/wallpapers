@@ -7,7 +7,6 @@ development:
   checkout_timeout: 720
   username: root
   password:
-  socket: /tmp/mysql.sock
 
 test:
   adapter: mysql2
@@ -17,7 +16,6 @@ test:
   pool: 50
   username: root
   password:
-  socket: /tmp/mysql.sock
 
 production:
   adapter: mysql2
@@ -27,4 +25,3 @@ production:
   pool: 50
   username: root
   password:
-  socket: /tmp/mysql.sock
