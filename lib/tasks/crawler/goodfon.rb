@@ -31,7 +31,7 @@ module Crawler
       page = Nokogiri::HTML(open_url url)
 
       wallpaper = Wallpaper.create(
-        image_url: parse_image(page, url),
+        image_src: parse_image(page, url),
         source: @home_url,
         tags: parse_tags(page),
         title: parse_title(page)

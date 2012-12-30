@@ -8,9 +8,9 @@ module Crawler
     attr_accessor :home_url, :listing_pages, :wallpaper_threads
 
     def initialize(options)
-      Wallpapers::Application.config.threadsafe!
       Wallpaper.connection.execute "SET GLOBAL max_connections = 10000000;"
       Thread.abort_on_exception = true
+      Wallpapers::Application.config.threadsafe!
 
       @listing_pages = []
       @wallpaper_threads = []
@@ -18,8 +18,7 @@ module Crawler
       @count = 0
       @home_url = options[:home_url]
       @verification_matcher = options[:verification_matcher]
-      # @threads_per_page = 4
-      @threads_per_page = 2
+      @threads_per_page = 1
     end
 
     def start!
@@ -51,6 +50,7 @@ module Crawler
       slice_size = @listing_pages.size > @threads_per_page ? @listing_pages.size/@threads_per_page : @listing_pages.size
 
       @listing_pages.each_slice(slice_size).map do |pages|
+        GC.start
         Thread.new do
           pages.each{ |page| crawl_listing_page(page) }
         end
@@ -62,6 +62,7 @@ module Crawler
       slice_size = links.size > @threads_per_page ? links.size/@threads_per_page : links.size
 
       links.each_slice(slice_size).each do |links_slice|
+        GC.start
         @wallpaper_threads << Thread.new do
           links_slice.each { |link| crawl_wallpaper(link) }
         end
@@ -83,7 +84,7 @@ module Crawler
     end
 
     def crawl_wallpaper(link)
-      throw 'you should implement crawl_wallpaper method'
+      raise 'you should implement crawl_wallpaper method'
     end
 
     class << self

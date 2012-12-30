@@ -3,8 +3,8 @@ development:
   encoding: utf8
   reconnect: true
   database: wallpapers_development
-  pool: 180
-  checkout_timeout: 360
+  pool: 360
+  checkout_timeout: 720
   username: root
   password:
   socket: /tmp/mysql.sock

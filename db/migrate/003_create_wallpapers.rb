@@ -4,6 +4,7 @@ class CreateWallpapers < ActiveRecord::Migration
       t.string :source
       t.string :slug
       t.attachment :image
+      t.string :image_src
       t.text :image_meta
       t.string :image_fingerprint
       t.timestamps

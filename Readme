@@ -1,6 +1,6 @@
 # resque workers
   redis-server &
-  COUNT=5 QUEUE=* rake resque:workers
+  COUNT=10 QUEUE=* rake resque:workers
 
 # increase your system limits
   $ sudo nano /etc/launchd.conf

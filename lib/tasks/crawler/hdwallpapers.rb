@@ -10,7 +10,6 @@ module Crawler
     def get_listing_pages(page)
       pages = page.css('div.pagination a')
       total_pages = pages[pages.count-2].content.to_i
-      # total_pages = 3
 
       @listing_pages << @home_url
       2.upto(total_pages).each do |page|
@@ -23,7 +22,11 @@ module Crawler
     def crawl_listing_page(url)
       page = super(url)
       links = page.css('ul.wallpapers li a').map do |link|
-        "#{ @home_url }#{ link.attr(:href) }"
+        if link.attr(:href).match('http://')
+          link.attr(:href)
+        else
+          "#{ @home_url }#{ link.attr(:href) }"
+        end
       end
       crawl_wallpapers(links)
     end
@@ -33,7 +36,7 @@ module Crawler
       page = Nokogiri::HTML(open_url url)
 
       wallpaper = Wallpaper.create(
-        image_url: parse_image(page),
+        image_src: parse_image(page),
         source: @home_url,
         tags: parse_tags(page),
         title: parse_title(page)
@@ -80,7 +83,11 @@ module Crawler
         end
       end
 
-      return "#{ @home_url }#{ path }"
+      if path.match('http://')
+        path
+      else
+        "#{ @home_url }#{ path }"
+      end
     end
   end
 end

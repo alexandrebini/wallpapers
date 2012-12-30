@@ -9,8 +9,7 @@ class Wallpaper < ActiveRecord::Base
     url: '/system/wallpapers/:id/:fingerprint/:basename_:style.:extension',
     styles: { }
 
-  attr_accessor :image_url
-  attr_accessible :image, :image_url, :source, :tags, :title
+  attr_accessible :image, :image_src, :source, :tags, :title
 
   # associations
   has_and_belongs_to_many :colors, join_table: :wallpapers_colors
@@ -22,7 +21,7 @@ class Wallpaper < ActiveRecord::Base
 
   private
   def download_image
-    Resque.enqueue(WallpaperDownload, id, image_url) if image_url
+    Resque.enqueue(WallpaperDownload, id) if image_src
   end
 
   def analyse_colors
