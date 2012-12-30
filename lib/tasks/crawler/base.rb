@@ -18,6 +18,8 @@ module Crawler
       @count = 0
       @home_url = options[:home_url]
       @verification_matcher = options[:verification_matcher]
+      # @threads_per_page = 4
+      @threads_per_page = 2
     end
 
     def start!
@@ -46,7 +48,7 @@ module Crawler
     end
 
     def get_listing_pages(page)
-      slice_size = @listing_pages.size > 4 ? @listing_pages.size/4 : @listing_pages.size
+      slice_size = @listing_pages.size > @threads_per_page ? @listing_pages.size/@threads_per_page : @listing_pages.size
 
       @listing_pages.each_slice(slice_size).map do |pages|
         Thread.new do
@@ -57,7 +59,7 @@ module Crawler
 
     def crawl_wallpapers(links)
       @total += links.size
-      slice_size = links.size > 4 ? links.size/4 : links.size
+      slice_size = links.size > @threads_per_page ? links.size/@threads_per_page : links.size
 
       links.each_slice(slice_size).each do |links_slice|
         @wallpaper_threads << Thread.new do
