@@ -35,8 +35,11 @@ module Crawler
       log "\ncrawling wallpaper #{ @count += 1 }/#{ @total } from #{ url }"
       page = Nokogiri::HTML(open_url url)
 
+      image_src = parse_image(page)
+      return if Wallpaper.where(image_src: image_src).exists?
+
       wallpaper = Wallpaper.create(
-        image_src: parse_image(page),
+        image_src: image_src,
         source: @home_url,
         tags: parse_tags(page),
         title: parse_title(page)

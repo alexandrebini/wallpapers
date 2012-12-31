@@ -49,23 +49,31 @@ module Crawler
     def get_listing_pages(page)
       slice_size = @listing_pages.size > @threads_per_page ? @listing_pages.size/@threads_per_page : @listing_pages.size
 
-      @listing_pages.each_slice(slice_size).map do |pages|
-        GC.start
-        Thread.new do
-          pages.each{ |page| crawl_listing_page(page) }
-        end
-      end.each(&:join)
+      begin
+        @listing_pages.shuffle.each_slice(slice_size).map do |pages|
+          GC.start
+          Thread.new do
+            pages.each{ |page| crawl_listing_page(page) }
+          end
+        end.each(&:join)
+      rescue Exception => e
+        fail_log "\n #{ e }\n" + e.backtrace.join("\n")
+      end
     end
 
     def crawl_wallpapers(links)
       @total += links.size
       slice_size = links.size > @threads_per_page ? links.size/@threads_per_page : links.size
 
-      links.each_slice(slice_size).each do |links_slice|
-        GC.start
-        @wallpaper_threads << Thread.new do
-          links_slice.each { |link| crawl_wallpaper(link) }
+      begin
+        links.shuffle.each_slice(slice_size).each do |links_slice|
+          GC.start
+          @wallpaper_threads << Thread.new do
+            links_slice.each { |link| crawl_wallpaper(link) }
+          end
         end
+      rescue Exception => e
+        fail_log "\n #{ e }\n" + e.backtrace.join("\n")
       end
     end
 
