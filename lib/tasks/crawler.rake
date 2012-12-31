@@ -22,7 +22,7 @@ namespace :crawler do
     # priorize images already downloaded
     Color.destroy_all
 
-    Wallpaper.all.each_slice(Wallpaper.count/4).map do |wallpapers|
+    Wallpaper.all.each_slice(Wallpaper.count/10).map do |wallpapers|
       Thread.new do
         wallpapers.each do |wallpaper|
           next if wallpaper.image_src.blank?
