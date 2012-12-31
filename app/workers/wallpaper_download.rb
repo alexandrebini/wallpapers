@@ -19,9 +19,10 @@ class WallpaperDownload
       wallpaper.image_file_name = filename
       wallpaper.save
 
-      download_logger "\nWallpaper #{ wallpaper.id } image: #{ wallpaper.image_src }"
+      source = local_image ? 'local' : 'remote'
+      download_logger "\nWallpaper #{ wallpaper.id } image: #{ wallpaper.image_src } (#{ source })"
     rescue Exception => e
-      download_logger "\nError on wallpaper #{ wallpaper.id }: #{ wallpaper.image_src }. #{ e }"
+      download_logger "\nError on wallpaper #{ wallpaper.id }: #{ wallpaper.image_src } (#{ source }). #{ e }"
       return false
     ensure
       file.close if file
