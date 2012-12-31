@@ -25,7 +25,7 @@ namespace :crawler do
     Wallpaper.all.each do |wallpaper|
       next if wallpaper.image_src.blank?
 
-      if Crawler::FileHelper.find_local_image(wallpaper.image_src)
+      if Crawler::FileHelper.find_local_image(wallpaper.image_src, cache: true)
         wallpapers_downloaded << wallpaper
       else
         wallpapers_to_download << wallpaper

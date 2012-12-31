@@ -1,9 +1,13 @@
 module Crawler
   module FileHelper
     class << self
-      def images
+      def images(options={})
         wallpapers_dir = "#{ Rails.root }/public/system/wallpapers"
-        Dir["#{ wallpapers_dir }/**/*"].reject { |fn| File.directory?(fn) }
+        if options[:cache]
+          @images ||= Dir["#{ wallpapers_dir }/**/*"].reject { |fn| File.directory?(fn) }
+        else
+          Dir["#{ wallpapers_dir }/**/*"].reject { |fn| File.directory?(fn) }
+        end
       end
 
       def find_local_image(filename)
@@ -41,11 +45,11 @@ module Crawler
         end
       end
 
-      def find_local_image(filename)
+      def find_local_image(filename, options={})
         ext = File.extname(filename)
         filename_with_style = "#{ File.basename(filename, ext) }_original#{ ext }"
 
-        images.each do |image|
+        images(options).each do |image|
           image_filename = File.basename(image)
           if image_filename == filename_with_style || image_filename == File.basename(filename)
             return image if File.exists?(image)
