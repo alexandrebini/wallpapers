@@ -19,11 +19,11 @@ namespace :crawler do
     wallpapers_to_download = []
 
     # priorize images already downloaded
-    Color.destroy_all # we analyse image after upload
+    Color.destroy_all
     Wallpaper.all.each do |wallpaper|
       next if wallpaper.image_src.blank?
 
-      if Crawler::find_local_image(wallpaper.image_src)
+      if Crawler::FileHelper.find_local_image(wallpaper.image_src)
         Resque.enqueue(WallpaperDownload, wallpaper.id)
       else
         wallpapers_to_download << wallpaper
@@ -34,7 +34,7 @@ namespace :crawler do
     order = ENV['order'] || 'asc'
     limit = ENV['limit'].to_i || 20_000
     wallpapers_to_download.reverse! if order == 'desc'
-    wallpapers_to_download[0..limit].each do |wallpaper|
+    wallpapers_to_download[0..limit].shuffle.each do |wallpaper|
       Resque.enqueue(WallpaperDownload, wallpaper.id)
     end
   end

@@ -18,6 +18,7 @@ class WallpaperDownload
       wallpaper.image = file
       wallpaper.image_file_name = filename
       wallpaper.save
+      wallpaper.colors.destroy_all
 
       source = local_image ? 'local' : 'remote'
       download_logger "\nWallpaper #{ wallpaper.id } image: #{ wallpaper.image_src } (#{ source })"
