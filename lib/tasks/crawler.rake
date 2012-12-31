@@ -17,24 +17,33 @@ namespace :crawler do
       image_fingerprint: nil)
 
     wallpapers_to_download = []
+    wallpapers_downloaded = []
 
     # priorize images already downloaded
     Color.destroy_all
+
     Wallpaper.all.each do |wallpaper|
       next if wallpaper.image_src.blank?
 
       if Crawler::FileHelper.find_local_image(wallpaper.image_src)
-        Resque.enqueue(WallpaperDownload, wallpaper.id)
+        wallpapers_downloaded << wallpaper
       else
         wallpapers_to_download << wallpaper
       end
     end
+
+    puts "#{ wallpapers_downloaded } downloaded"
+    puts "#{ wallpapers_to_download.size } to download"
 
     # add new remove images
     order = ENV['order'] || 'asc'
     limit = ENV['limit'].to_i || 20_000
     wallpapers_to_download.reverse! if order == 'desc'
     wallpapers_to_download[0..limit].shuffle.each do |wallpaper|
+      Resque.enqueue(WallpaperDownload, wallpaper.id)
+    end
+
+    wallpapers_downloaded.each do |wallpaper|
       Resque.enqueue(WallpaperDownload, wallpaper.id)
     end
   end
