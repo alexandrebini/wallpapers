@@ -10,18 +10,6 @@ module Crawler
         end
       end
 
-      def find_local_image(filename)
-        ext = File.extname(filename)
-        file_with_style = "#{ File.basename(filename, ext) }_original#{ ext }"
-
-        images.each do |image|
-          if File.basename(image) == file_with_style
-            return image if File.exists?(image)
-          end
-        end
-        return nil
-      end
-
       def delete_local_image(path)
         File.delete(path) if File.exists?(path)
         dir = path.gsub(File.basename(path), '')
