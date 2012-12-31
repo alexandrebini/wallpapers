@@ -22,15 +22,19 @@ namespace :crawler do
     # priorize images already downloaded
     Color.destroy_all
 
-    Wallpaper.all.each do |wallpaper|
-      next if wallpaper.image_src.blank?
+    Wallpaper.all.each_slice(Wallpaper.count/4).map do |wallpapers|
+      Thread.new do
+        wallpapers.each do |wallpaper|
+          next if wallpaper.image_src.blank?
 
-      if Crawler::FileHelper.find_local_image(wallpaper.image_src, cache: true)
-        wallpapers_downloaded << wallpaper
-      else
-        wallpapers_to_download << wallpaper
+          if Crawler::FileHelper.find_local_image(wallpaper.image_src, cache: true)
+            wallpapers_downloaded << wallpaper
+          else
+            wallpapers_to_download << wallpaper
+          end
+        end
       end
-    end
+    end.each(&:join)
 
     puts "#{ wallpapers_downloaded } downloaded"
     puts "#{ wallpapers_to_download.size } to download"
