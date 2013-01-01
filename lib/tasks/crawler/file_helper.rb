@@ -52,7 +52,7 @@ module Crawler
         grays = %w(#808080 #868584 #939294 #79776d #838183 #818181 #848384 #828281
           #888f94 #848688 #838892 #818080 #7b7f78)
 
-        return false if options[:min_size] && File.size(filename) < options[:min_size]
+        return false if options[:min_size] && File.size(path) < options[:min_size]
 
         colors = Miro::DominantColors.new(path)
         if grays.include?(colors.to_hex.first) && colors.by_percentage.first * 100 > 60
