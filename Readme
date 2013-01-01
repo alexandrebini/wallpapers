@@ -7,3 +7,13 @@
     limit maxfiles 1000000 1000000
 
   $ reboot
+
+# mysql
+  mysqldump -u root wallpapers_development > wallpapers.year-month-day.hour-minute.sql # backup
+  mysql -u root wallpapers_development < wallpapers.year-month-day.hour-minute.sql # restore
+
+# mount hfs on linux
+  sudo aptitude install hfsplus
+  sudo mkdir -p /Volumes/BINI
+  sudo chmod 777 /Volumes/BINI
+  sudo mount -o force -t hfsplus /dev/sdb2 /Volumes/BINI/
