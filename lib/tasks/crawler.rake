@@ -29,7 +29,9 @@ namespace :crawler do
     Wallpaper.select('id, image_src').all.each_slice(Wallpaper.count/20).map do |wallpapers|
       Thread.new do
         wallpapers.each do |wallpaper|
-          puts "#{ count += 1 }/#{ total }"
+          count += 1
+          puts "Restart downloades: #{ count }/#{ total }" if count % 500 == 0
+
           next if wallpaper.image_src.blank?
 
           if Crawler::FileHelper.find_local_image(wallpaper.image_src, cache: true)
@@ -72,7 +74,8 @@ namespace :crawler do
 
     images.each do |path|
       begin
-        puts "#{ count += 1 }/#{ images.size }"
+        count += 1
+        puts "Move downloaded files: #{ count }/#{ images.size }" if count % 500 == 0
         FileUtils.mv path, downloads_dir
         Crawler::FileHelper.remove_empty_dir path
       rescue Exception => e
@@ -108,7 +111,9 @@ namespace :crawler do
     images.each_slice(images.size/10).map do |images_slice|
       Thread.new do
         images_slice.each do |path|
+          count += 1
           puts "#{ count += 1 }/#{ total }"
+          puts "Copy downloaded files: #{ count }/#{ total }" if count % 100 == 0
           begin
             filename = File.basename(path)
             target_path = "#{ target_dir }/#{ filename }"
