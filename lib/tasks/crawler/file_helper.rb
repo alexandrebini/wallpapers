@@ -2,11 +2,13 @@ module Crawler
   module FileHelper
     class << self
       def images(options={})
-        wallpapers_dir = "#{ Rails.root }/public/system/wallpapers"
+        default_options = { dir: "#{ Rails.root }/public/system/wallpapers" }
+        options = default_options.merge(options)
+
         if options[:cache]
-          @images ||= Dir["#{ wallpapers_dir }/**/*"].reject { |fn| File.directory?(fn) }
+          @images ||= Dir["#{ options[:dir] }/**/*"].reject { |fn| File.directory?(fn) }
         else
-          Dir["#{ wallpapers_dir }/**/*"].reject { |fn| File.directory?(fn) }
+          Dir["#{ options[:dir] }/**/*"].reject { |fn| File.directory?(fn) }
         end
       end
 
@@ -44,6 +46,19 @@ module Crawler
           end
         end
         return nil
+      end
+
+      def valid_image?(path)
+        grays = %w(#808080 #868584 #939294 #79776d #838183 #818181 #848384 #828281
+          #888f94 #848688 #838892 #818080 #7b7f78)
+        colors = Miro::DominantColors.new(path)
+        if grays.include?(colors.to_hex.first) && colors.by_percentage.first * 100 > 60
+          return false
+        else
+          return true
+        end
+      rescue
+        return false
       end
     end
   end
