@@ -79,4 +79,26 @@ namespace :crawler do
     end
     system "find #{dir} -type d -empty -exec rmdir '{}'" rescue nil
   end
+
+  task copy_downloaded_files: :environment do
+    source_dir = "#{ Rails.root }/public/system/wallpapers"
+    target_dir = "/Volumes/BINI/wallpapers"
+    FileUtils.mkdir_p target_dir
+
+    images = Crawler::FileHelper.images
+    count = 0
+    total = images.size
+
+    images.each do |path|
+      puts "#{ i+= 1 }/#{ total }"
+      begin
+        filename = File.basename(path)
+        target_path = "#{ target_dir }/#{ filename }"
+        next if File.exists?(target_path) && File.size(target_path) > File.size(path)
+        FileUtils.cp path, target_dir
+      rescue Exception => e
+        puts e.to_s
+      end
+    end
+  end
 end

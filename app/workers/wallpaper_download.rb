@@ -12,7 +12,7 @@ class WallpaperDownload
       if local_image
         file = File.open(local_image)
       else
-        file = StringIO.new(open_url wallpaper.image_src, proxy: false)
+        file = StringIO.new(open_url wallpaper.image_src, proxy: false, min_size: 22.kilobytes)
       end
 
       wallpaper.image = file
