@@ -24,7 +24,7 @@ namespace :crawler do
     count = 0
     total = Wallpaper.count
 
-    Wallpaper.all.each_slice(Wallpaper.count/20).map do |wallpapers|
+    Wallpaper.select('id, image_src').all.each_slice(Wallpaper.count/20).map do |wallpapers|
       Thread.new do
         wallpapers.each do |wallpaper|
           puts "#{ count += 1 }/#{ total }"
