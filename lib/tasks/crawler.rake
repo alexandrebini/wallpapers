@@ -90,7 +90,7 @@ namespace :crawler do
     count = 0
     total = images.size
 
-    images.each_slice(images.size/5).map do |images_slice|
+    images.each_slice(images.size/10).map do |images_slice|
       Thread.new do
         images_slice.each do |path|
           puts "#{ count += 1 }/#{ total }"
@@ -121,7 +121,7 @@ namespace :crawler do
       Thread.new do
         images_slice.each do |path|
           puts "#{ count += 1 }/#{ total }"
-          unless Crawler::FileHelper.valid_image?(path)
+          unless Crawler::FileHelper.valid_image?(path, min_size: 22.kilobytes)
             FileUtils.mv path, target_dir
           end
         end
