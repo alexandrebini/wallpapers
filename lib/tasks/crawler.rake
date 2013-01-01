@@ -22,9 +22,13 @@ namespace :crawler do
     Color.connection.execute "TRUNCATE TABLE colors;"
     Color.destroy_all
 
+    count = 0
+    total = Wallpaper.count
+
     Wallpaper.all.each_slice(Wallpaper.count/30).map do |wallpapers|
       Thread.new do
         wallpapers.each do |wallpaper|
+          puts "#{ count += 1 }/#{ total }"
           next if wallpaper.image_src.blank?
 
           if Crawler::FileHelper.find_local_image(wallpaper.image_src, cache: true)
@@ -58,9 +62,13 @@ namespace :crawler do
     # move download files to wallpapers/downloads folder
     downloads_dir = "#{ Rails.root }/public/system/wallpapers/downloads"
     FileUtils.mkdir_p downloads_dir
+
     images = Crawler::FileHelper.images.reject { |file| file.match(downloads_dir) }
+    count = 0
+
     images.each do |path|
       begin
+        puts "#{ count += 1 }/#{ images.size }"
         FileUtils.mv path, downloads_dir
         Crawler::FileHelper.remove_empty_dir path
       rescue Exception => e
