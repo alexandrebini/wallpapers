@@ -109,7 +109,7 @@ module Crawler
           @denied_proxies = []
           @proxy_list = []
 
-          # # get from http://www.checkedproxylists.com/
+          # get from http://www.checkedproxylists.com/
           CSV.open("#{ Rails.root }/config/proxylist.csv", col_sep: ';').each do |row|
             next if row[3] == 'true'
             ip = row[0].strip
