@@ -14,18 +14,17 @@ namespace :crawler do
       image_file_size: nil, image_updated_at: nil, image_meta: nil,
       image_fingerprint: nil)
 
-    wallpapers_to_download = []
-    wallpapers_downloaded = []
-
-    # priorize images already downloaded
+    # clean colors
     Color.connection.execute "TRUNCATE TABLE wallpapers_colors;"
     Color.connection.execute "TRUNCATE TABLE colors;"
     Color.destroy_all
 
+    wallpapers_downloaded = []
+    wallpapers_to_download = []
     count = 0
     total = Wallpaper.count
 
-    Wallpaper.all.each_slice(Wallpaper.count/30).map do |wallpapers|
+    Wallpaper.all.each_slice(Wallpaper.count/20).map do |wallpapers|
       Thread.new do
         wallpapers.each do |wallpaper|
           puts "#{ count += 1 }/#{ total }"
@@ -55,6 +54,8 @@ namespace :crawler do
     wallpapers_downloaded.each do |wallpaper|
       Resque.enqueue(WallpaperDownload, wallpaper.id)
     end
+
+    puts "let's work..."
   end
 
   desc 'move downloaded files from /wallpapers/ to /wallpapers/downloads'
