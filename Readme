@@ -17,3 +17,4 @@
   sudo mkdir -p /Volumes/BINI
   sudo chmod 777 /Volumes/BINI
   sudo mount -o force -t hfsplus /dev/sdb2 /Volumes/BINI/
+  sudo umount /Volumes/Bini
