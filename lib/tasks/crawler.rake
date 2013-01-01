@@ -7,7 +7,7 @@ namespace :crawler do
     ].each(&:join)
   end
 
-  desc 'this task move downloaded files to /wallpapers/downloads, set all images attributes to nil, and create a queue priorizing images that are already downloaded. Remenber to send order=(asc|desc)'
+  desc 'this task move downloaded files to /wallpapers/downloads, set all images attributes to nil, and create a queue priorizing images that are already downloaded. Remenber to send order=(asc|desc) and limit (default 20.000)'
   task restart_downloads: :move_downloaded_files do
     # clear wallpapers
     Wallpaper.update_all(image_file_name: nil, image_content_type: nil,
@@ -41,9 +41,10 @@ namespace :crawler do
 
     # add new remove images
     order = ENV['order'] || 'asc'
+    limit = ENV['limit'].to_i || 20_000
     wallpapers_to_download.sort_by!{ |wallpaper| wallpaper.id }
     wallpapers_to_download.reverse! if order == 'desc'
-    wallpapers_to_download.shuffle.each do |wallpaper|
+    wallpapers_to_download[0..limit].shuffle.each do |wallpaper|
       Resque.enqueue(WallpaperDownload, wallpaper.id)
     end
 
