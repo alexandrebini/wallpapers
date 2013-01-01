@@ -18,6 +18,8 @@ namespace :crawler do
     wallpapers_downloaded = []
 
     # priorize images already downloaded
+    Color.connection.execute "TRUNCATE TABLE wallpapers_colors;"
+    Color.connection.execute "TRUNCATE TABLE colors;"
     Color.destroy_all
 
     Wallpaper.all.each_slice(Wallpaper.count/30).map do |wallpapers|
