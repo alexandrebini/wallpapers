@@ -9,6 +9,8 @@ namespace :crawler do
 
   desc 'this task move downloaded files to /wallpapers/downloads, set all images attributes to nil, and create a queue priorizing images that are already downloaded. Remenber to send order=(asc|desc) and limit (default 20.000)'
   task restart_downloads: :move_downloaded_files do
+    Thread.abort_on_exception = true
+
     # clear wallpapers
     Wallpaper.update_all(image_file_name: nil, image_content_type: nil,
       image_file_size: nil, image_updated_at: nil, image_meta: nil,
@@ -60,6 +62,7 @@ namespace :crawler do
 
   desc 'move downloaded files from /wallpapers/ to /wallpapers/downloads'
   task move_downloaded_files: :environment do
+    Thread.abort_on_exception = true
     # move download files to wallpapers/downloads folder
     downloads_dir = "#{ Rails.root }/public/system/wallpapers/downloads"
     FileUtils.mkdir_p downloads_dir
