@@ -30,7 +30,7 @@ namespace :crawler do
       Thread.new do
         wallpapers.each do |wallpaper|
           count += 1
-          puts "Restart downloades: #{ count }/#{ total }" if count % 500 == 0
+          puts "Restart downloads: #{ count }/#{ total }" if count % 500 == 0
 
           next if wallpaper.image_src.blank?
 

@@ -39,13 +39,9 @@ module Crawler
         ext = File.extname(filename)
         filename_with_style = "#{ File.basename(filename, ext) }_original#{ ext }"
 
-        images(options).each do |image|
-          image_filename = File.basename(image)
-          if image_filename == filename_with_style || image_filename == File.basename(filename)
-            return image if File.exists?(image)
-          end
+        Crawler::FileHelper.images(options).find do |path|
+          path.index(filename_with_style) || path.index(filename) && File.exists?(path)
         end
-        return nil
       end
 
       def valid_image?(path, options={})
