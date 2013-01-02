@@ -15,6 +15,8 @@ module Crawler
       pages = page.css('div.pagenums_bottom a.selector')
       total_pages = pages[pages.count-2].content.to_i
 
+      total_pages = 2
+
       @listing_pages << first_page
       2.upto(total_pages).each do |page|
         @listing_pages << "#{ @home_url }/wallpaper/downloads/date/any/index#{ page }.html"
@@ -46,12 +48,17 @@ module Crawler
 
       wallpaper = Wallpaper.create(
         image_src: image_src,
-        source: @home_url,
+        source: parse_source,
+        source_url: url,
         tags: parse_tags(page),
         title: parse_title(page)
       )
     rescue Exception => e
       fail_log "\n#{ url }\t#{ e.to_s }\n"
+    end
+
+    def parse_source
+      @source ||= Source.find_or_create_by_name_and_url('InterfaceLIFT', 'http://interfacelift.com')
     end
 
     def parse_title(page)

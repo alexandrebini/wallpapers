@@ -11,13 +11,20 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 5) do
+ActiveRecord::Schema.define(:version => 6) do
 
   create_table "colors", :force => true do |t|
     t.string "hex"
   end
 
   add_index "colors", ["hex"], :name => "index_colors_on_hex"
+
+  create_table "sources", :force => true do |t|
+    t.string "name"
+    t.string "url"
+  end
+
+  add_index "sources", ["name"], :name => "index_sources_on_name"
 
   create_table "tag_translations", :force => true do |t|
     t.integer  "tag_id"
@@ -52,7 +59,8 @@ ActiveRecord::Schema.define(:version => 5) do
   add_index "wallpaper_translations", ["wallpaper_id"], :name => "index_wallpaper_translations_on_wallpaper_id"
 
   create_table "wallpapers", :force => true do |t|
-    t.string   "source"
+    t.integer  "source_id"
+    t.string   "source_url"
     t.string   "slug"
     t.string   "image_file_name"
     t.string   "image_content_type"
@@ -61,12 +69,16 @@ ActiveRecord::Schema.define(:version => 5) do
     t.string   "image_src"
     t.text     "image_meta"
     t.string   "image_fingerprint"
+    t.string   "status"
     t.datetime "created_at",         :null => false
     t.datetime "updated_at",         :null => false
   end
 
   add_index "wallpapers", ["created_at"], :name => "index_wallpapers_on_created_at"
+  add_index "wallpapers", ["image_file_name"], :name => "index_wallpapers_on_image_file_name"
   add_index "wallpapers", ["slug"], :name => "index_wallpapers_on_slug"
+  add_index "wallpapers", ["source_id"], :name => "index_wallpapers_on_source_id"
+  add_index "wallpapers", ["status"], :name => "index_wallpapers_on_status"
 
   create_table "wallpapers_colors", :id => false, :force => true do |t|
     t.integer "wallpaper_id"

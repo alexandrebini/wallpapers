@@ -35,12 +35,17 @@ module Crawler
 
       wallpaper = Wallpaper.create(
         image_src: image_src,
-        source: @home_url,
+        source: parse_source,
+        source_url: url,
         tags: parse_tags(page),
         title: parse_title(page)
       )
     rescue Exception => e
       fail_log "\n#{ url }\t#{ e.to_s }\n"
+    end
+
+    def parse_source
+      @source ||= Source.find_or_create_by_name_and_url('GoodFon', 'http://www.goodfon.com')
     end
 
     def parse_title(page)
