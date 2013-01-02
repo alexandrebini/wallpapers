@@ -83,14 +83,14 @@ namespace :crawler do
   desc 'find empty folders and delete it'
   task clean_empty_folders: :environment do
     dir = "#{ Rails.root }/public/system/wallpapers"
-    system "find #{ dir } -name \".DS_Store\" -depth -exec rm {} \;"
+    system "find #{ dir } -name \".DS_Store\" -depth -exec rm {} \\;"
     Dir.glob("#{dir}/**/", File::FNM_DOTMATCH).count do |d|
       begin
         Dir.rmdir(d)
       rescue SystemCallError
       end
     end
-    system "find #{dir} -type d -empty -exec rmdir '{}'\;" rescue nil
+    system "find #{dir} -type d -empty -exec rmdir '{}'\\;" rescue nil
   end
 
   desc 'copy downloaded files to other dir. This is useful to copy to external disk'
