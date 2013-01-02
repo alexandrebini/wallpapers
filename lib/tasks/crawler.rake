@@ -43,12 +43,14 @@ namespace :crawler do
       end
     end.each(&:join)
 
-    puts "#{ wallpapers_downloaded } downloaded"
+    puts "#{ wallpapers_downloaded.size } downloaded"
     puts "#{ wallpapers_to_download.size } to download"
 
     # add new remove images
     order = ENV['order'] || 'asc'
-    limit = ENV['limit'].to_i || 20_000
+    limit = ENV['limit'].to_i
+    limit = 20_000 if limit == 0
+
     wallpapers_to_download.sort_by!{ |wallpaper| wallpaper.id }
     wallpapers_to_download.reverse! if order == 'desc'
     wallpapers_to_download[0..limit].shuffle.each do |wallpaper|
