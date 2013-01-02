@@ -103,7 +103,8 @@ module Crawler
           response.body.bytesize < options[:min_size]
 
         # validate the content-length
-        return false if response['content-length'].to_i < response.body.bytesize
+        return false if response['content-length'] &&
+          response['content-length'].to_i < response.body.bytesize
 
         return true
       end
