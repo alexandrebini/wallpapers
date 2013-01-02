@@ -15,8 +15,6 @@ module Crawler
       pages = page.css('div.pagenums_bottom a.selector')
       total_pages = pages[pages.count-2].content.to_i
 
-      total_pages = 2
-
       @listing_pages << first_page
       2.upto(total_pages).each do |page|
         @listing_pages << "#{ @home_url }/wallpaper/downloads/date/any/index#{ page }.html"
