@@ -80,23 +80,30 @@ module Crawler
         request = Net::HTTP::Get.new(uri.request_uri)
         response = http.request(request)
 
-        if response.kind_of?(Net::HTTPSuccess) && body_is_valid?(response.body, options)
+        if response.kind_of?(Net::HTTPSuccess) && body_is_valid?(response, options)
           return response.body
         else
           return nil
         end
       end
 
-      def body_is_valid?(body, options={})
-        return false if body.blank?
+      def header_is_valid(response)
+
+      end
+
+      def body_is_valid?(response, options={})
+        return false if response.body.blank?
 
         # validates the verification matcher
         return false if options[:verification_matcher].present? &&
-          body.index(options[:verification_matcher]).blank?
+          response.body.index(options[:verification_matcher]).blank?
 
         # validates the min size
         return false if options[:min_size].present? &&
-          body.bytesize < options[:min_size]
+          response.body.bytesize < options[:min_size]
+
+        # validate the content-length
+        return false if response['content-length'].to_i < response.body.bytesize
 
         return true
       end

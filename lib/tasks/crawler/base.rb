@@ -8,7 +8,7 @@ module Crawler
     attr_accessor :home_url, :listing_pages, :wallpaper_threads
 
     def initialize(options)
-      # Wallpaper.connection.execute "SET GLOBAL max_connections = 10000000;"
+      Wallpaper.connection.execute "SET GLOBAL max_connections = 9999999999999;"
       Thread.abort_on_exception = true
       Wallpapers::Application.config.threadsafe!
 
