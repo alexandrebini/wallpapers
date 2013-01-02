@@ -107,7 +107,6 @@ namespace :crawler do
       Thread.new do
         images_slice.each do |path|
           count += 1
-          puts "#{ count += 1 }/#{ total }"
           puts "Copy downloaded files: #{ count }/#{ total }" if count % 100 == 0
           begin
             filename = File.basename(path)
@@ -135,7 +134,8 @@ namespace :crawler do
     images.each_slice(images.size/5).map do |images_slice|
       Thread.new do
         images_slice.each do |path|
-          puts "#{ count += 1 }/#{ total }"
+          count += 1
+          puts "Check images integrity: #{ count }/#{ total }" if count % 100 == 0
           unless Crawler::FileHelper.valid_image?(path, min_size: 22.kilobytes)
             FileUtils.mv path, target_dir
           end
