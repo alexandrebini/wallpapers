@@ -1,4 +1,4 @@
-require './base'
+require 'base'
 module Crawler
   class Hdwallpapers < Crawler::Base
     def initialize

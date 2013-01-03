@@ -1,5 +1,5 @@
-require './file_helper'
-require './url_opener'
+require 'file_helper'
+require 'url_opener'
 require 'nokogiri'
 
 module Crawler
