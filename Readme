@@ -40,17 +40,62 @@
     mysql wallpapers password: 6ivqxTkK6m
 
   # setup
-    apt-get install mysql
+    # start
+    adduser wallpapers
+    passwd -d wallpapers
 
-    nano /etc/mysql/my.cnf
-      bind-address = 0.0.0.0
+    mkdir /home/wallpapers/www
+    chown wallpapers.wallpapers /home/wallpapers/www
 
-    mysql -u root mysql -p
-      CREATE USER 'wallpapers'@'localhost' IDENTIFIED BY '6ivqxTkK6m';
-      GRANT ALL PRIVILEGES ON * . * TO  'wallpapers'@'localhost';
+    rm /home/wallpapers/.bashrc
+    cp /root/.bashrc /home/wallpapers/
+    chown wallpapers.wallpapers /home/wallpapers/.bashrc
 
-      CREATE USER 'wallpapers'@'%' IDENTIFIED BY '6ivqxTkK6m';
-      GRANT ALL PRIVILEGES ON *.* TO 'wallpapers'@'%';
+    mkdir /home/wallpapers/.ssh
+    cp /root/.ssh/authorized_keys /home/wallpapers/.ssh/
+    chown -R wallpapers.wallpapers /home/wallpapers/.ssh
 
-      FLUSH PRIVILEGES;
-      exit
+    # mysql
+      apt-get install mysql
+
+      nano /etc/mysql/my.cnf
+        bind-address = 0.0.0.0
+
+      mysql -u root mysql -p
+        CREATE USER 'wallpapers'@'localhost' IDENTIFIED BY '6ivqxTkK6m';
+        GRANT ALL PRIVILEGES ON * . * TO  'wallpapers'@'localhost';
+
+        CREATE USER 'wallpapers'@'%' IDENTIFIED BY '6ivqxTkK6m';
+        GRANT ALL PRIVILEGES ON *.* TO 'wallpapers'@'%';
+
+        FLUSH PRIVILEGES;
+        exit
+
+    # nodejs
+      apt-get install python g++ make
+      mkdir ~/nodejs && cd $_
+      wget -N http://nodejs.org/dist/node-latest.tar.gz
+      tar xzvf node-latest.tar.gz && cd `ls -rd node-v*`
+      ./configure
+      make install
+
+    # rvm
+      sudo bash -s stable < <(curl -s https://raw.github.com/wayneeseguin/rvm/master/binscripts/rvm-installer)
+
+      # add user to rvm group
+        usermod -a -G rvm root
+        usermod -a -G rvm wallpapers
+
+      # nano ~/.gemrc
+        gem: --no-ri --no-rdoc
+
+      # nano /etc/rvmrc
+        export rvm_trust_rvmrcs_flag=1
+        export rvm_gemset_create_on_use_flag=1
+        export rvm_project_rvmrc=1
+
+      # install dependencies
+        apt-get install build-essential openssl libreadline6 libreadline6-dev curl git-core zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-dev sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev ncurses-dev automake libtool bison subversion pkg-config
+
+      # install ruby
+        rvm install ruby-1.9.3-p362

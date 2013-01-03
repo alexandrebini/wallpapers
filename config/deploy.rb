@@ -1,25 +1,43 @@
-set :application, "set your application name here"
-set :repository,  "set your repository location here"
+set :use_sudo, false
+set :user, 'wallpapers'
 
-# set :scm, :git # You can set :scm explicitly or Capistrano will make an intelligent guess based on known version control directory names
-# Or: `accurev`, `bzr`, `cvs`, `darcs`, `git`, `mercurial`, `perforce`, `subversion` or `none`
+set :deploy_to, '/home/wallpapers/www/'
+set :application, 'wallpapers'
+set :repository,  'git@github.com:alexandrebini/wallpapers.git'
+set :branch,  'master'
+set :scm, :git
+set :deploy_via, :remote_cache
+set :keep_releases, 5
 
-role :web, "your web-server here"                          # Your HTTP server, Apache/etc
-role :app, "your app-server here"                          # This may be the same as your `Web` server
-role :db,  "your primary db-server here", :primary => true # This is where Rails migrations will run
-role :db,  "your slave db-server here"
+role :web,  'wallpapers'
+role :app, 'wallpapers'
+role :db,  'wallpapers', primary: true
+set :rails_env, 'production'
 
-# if you want to clean up old releases on each deploy uncomment this:
-# after "deploy:restart", "deploy:cleanup"
+# rvm
+set :rvm_ruby_string, 'ruby-1.9.3-p362@wallpapers'
+set :rvm_type, :system
+require 'rvm/capistrano'
 
-# if you're still using the script/reaper helper you will need
-# these http://github.com/rails/irs_process_scripts
+# ==========================================================
+before 'deploy:assets:precompile', 'assets:bundle'
+after 'deploy', 'deploy:restart', 'deploy:cleanup'
 
-# If you are using Passenger mod_rails uncomment this:
-# namespace :deploy do
-#   task :start do ; end
-#   task :stop do ; end
-#   task :restart, :roles => :app, :except => { :no_release => true } do
-#     run "#{try_sudo} touch #{File.join(current_path,'tmp','restart.txt')}"
-#   end
-# end
+namespace :deploy do
+  task :start do ; end
+  task :stop do ; end
+  task :restart, roles: :app do
+    run "#{ try_sudo } touch #{ File.join(current_path, 'tmp', 'restart.txt') }"
+  end
+end
+
+namespace :assets do
+  task :bundle, roles: :app do
+    run "cd #{ release_path } && bundle install"
+  end
+
+  desc 'build missing paperclip styles'
+  task :build_missing_paperclip_styles, roles: :app do
+    run "cd #{ release_path }; RAILS_ENV=#{ rails_env } bundle exec rake paperclip:refresh:missing_styles"
+  end
+end
