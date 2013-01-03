@@ -1,3 +1,4 @@
+require "#{ Rails.root }/lib/tasks/crawler/base"
 module Crawler
   class Goodfon < Crawler::Base
     def initialize

@@ -27,31 +27,32 @@ namespace :crawler do
           next if wallpaper.image_src.blank?
 
           if Crawler::FileHelper.find_local_image(wallpaper.image_src, cache: true)
-            wallpapers_downloaded << wallpaper
+            # wallpapers_downloaded << wallpaper
           else
-            wallpapers_to_download << wallpaper
+            Resque.enqueue(WallpaperDownload, wallpaper.id)
+            # wallpapers_to_download << wallpaper
           end
         end
       end
     end.each(&:join)
 
-    puts "#{ wallpapers_downloaded.size } downloaded"
-    puts "#{ wallpapers_to_download.size } to download"
+    # puts "#{ wallpapers_downloaded.size } downloaded"
+    # puts "#{ wallpapers_to_download.size } to download"
 
-    # add new remove images
-    order = ENV['order'] || 'asc'
-    limit = ENV['limit'].to_i
-    limit = 20_000 if limit == 0
+    # # add new remove images
+    # order = ENV['order'] || 'asc'
+    # limit = ENV['limit'].to_i
+    # limit = 20_000 if limit == 0
 
-    wallpapers_to_download.sort_by!{ |wallpaper| wallpaper.id }
-    wallpapers_to_download.reverse! if order == 'desc'
-    wallpapers_to_download[0..limit].shuffle.each do |wallpaper|
-      Resque.enqueue(WallpaperDownload, wallpaper.id)
-    end
+    # wallpapers_to_download.sort_by!{ |wallpaper| wallpaper.id }
+    # wallpapers_to_download.reverse! if order == 'desc'
+    # wallpapers_to_download[0..limit].shuffle.each do |wallpaper|
+    #   Resque.enqueue(WallpaperDownload, wallpaper.id)
+    # end
 
-    wallpapers_downloaded.each do |wallpaper|
-      Resque.enqueue(WallpaperDownload, wallpaper.id)
-    end
+    # wallpapers_downloaded.each do |wallpaper|
+    #   Resque.enqueue(WallpaperDownload, wallpaper.id)
+    # end
 
     puts "let's work..."
   end
@@ -123,8 +124,10 @@ namespace :crawler do
 
   desc 'check if each image is valid. This is done by checking the percentage of gray (#808080) of the file'
   task check_images_integrity: :environment do
-    source_dir = '/Volumes/BINI/wallpapers'
-    target_dir = '/Volumes/BINI/wallpapers-to-check'
+    # source_dir = '/Volumes/BINI/wallpapers'
+    # target_dir = '/Volumes/BINI/wallpapers-to-check'
+    source_dir = "#{ Rails.root }/public/system/wallpapers"
+    target_dir = "#{ Rails.root }/public/system/wallpapers-to-check"
     FileUtils.mkdir_p target_dir
 
     images = Crawler::FileHelper.images(dir: source_dir)

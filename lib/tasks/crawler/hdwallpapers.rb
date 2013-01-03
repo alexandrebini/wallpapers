@@ -1,3 +1,4 @@
+require "#{ Rails.root }/lib/tasks/crawler/base"
 module Crawler
   class Hdwallpapers < Crawler::Base
     def initialize

@@ -1,3 +1,4 @@
+require "#{ Rails.root }/lib/tasks/crawler/file_helper"
 require "#{ Rails.root }/lib/tasks/crawler/url_opener"
 require 'nokogiri'
 
@@ -26,6 +27,7 @@ module Crawler
       get_listing_pages(page)
       get_wallpapers
       self
+      puts "Done! #{ @count }/#{ @total }"
     end
 
     def log(args)
