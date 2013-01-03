@@ -64,6 +64,9 @@ module Crawler
     end
 
     def crawl_wallpapers(links)
+      links.reject! { |url| Wallpaper.where(source_url: url).exists? }
+      return if links.size == 0
+
       @total += links.size
       slice_size = links.size > @threads_per_page ? links.size/@threads_per_page : links.size
 

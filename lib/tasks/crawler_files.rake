@@ -1,3 +1,5 @@
+require "#{ Rails.root }/app/workers/wallpaper_download"
+
 namespace :crawler do
   desc 'this task move downloaded files to /wallpapers/downloads, set all images attributes to nil, and create a queue priorizing images that are already downloaded. Remenber to send order=(asc|desc) and limit (default 20.000)'
   task restart_downloads: :move_downloaded_files do
