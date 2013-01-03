@@ -5,6 +5,7 @@ gem 'mysql2', '0.3.11'
 
 gem 'paperclip', '3.4.0'
 gem 'paperclip-meta', '0.4.3'
+gem 'aws-sdk', '1.8.0'
 gem 'miro', '0.2.2'
 
 gem 'haml', '3.1.7'

@@ -5,11 +5,16 @@ class Wallpaper < ActiveRecord::Base
   translates :title, :slug
   friendly_id :title, use: :globalize
   has_attached_file :image,
-    path: ':rails_root/public/system/wallpapers/:id/:fingerprint/:basename_:style.:extension',
-    url: '/system/wallpapers/:id/:fingerprint/:basename_:style.:extension',
-    styles: { }
+    path: '/wallpapers/:fingerprint/:basename_:style.:extension',
+    styles: { thumb: '128x128#' },
+    storage: :s3,
+    s3_credentials: {
+      access_key_id: 'AKIAJERSSKD55B24HNYA',
+      secret_access_key: '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'
+    },
+    bucket: 'wallpapersbr'
 
-  attr_accessible :image, :image_src, :source, :source_url, :tags, :title
+  attr_accessible :image, :image_src, :status, :source, :source_url, :tags, :title
 
   # associations
   belongs_to :source
@@ -20,11 +25,17 @@ class Wallpaper < ActiveRecord::Base
   after_create :download_image
   after_save :analyse_colors
 
-  private
+  # scopes
+  scope :random, order: 'RAND()'
+  scope :downloading, where(status: 'downloading')
+  scope :pending, where(status: 'pending')
+
   def download_image
+    update_attributes(status: 'downloading')
     Resque.enqueue(WallpaperDownload, id) if image_src
   end
 
+  private
   def analyse_colors
     reload
 

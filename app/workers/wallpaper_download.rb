@@ -5,9 +5,10 @@ class WallpaperDownload
 
   class << self
     def perform(wallpaper_id)
-      wallpaper = Wallpaper.find(wallpaper_id)
-      filename = File.basename(wallpaper.image_src)
+      wallpaper = Wallpaper.pending.find(wallpaper_id)
+      return if wallpaper.blank?
 
+      filename = File.basename(wallpaper.image_src)
       local_image = Crawler::FileHelper.find_local_image(filename)
       if local_image
         file = File.open(local_image)
@@ -28,12 +29,17 @@ class WallpaperDownload
     ensure
       file.close if file
       Crawler::FileHelper.delete_local_image(local_image) if local_image
+      add_next_wallpaper_to_queue
     end
 
     def download_logger(msg)
       @download_logger ||= Logger.new("#{ Rails.root }/log/download_error.log")
       puts msg
       @download_logger << msg
+    end
+
+    def add_next_wallpaper_to_queue
+      Wallpaper.pending.random.first.download_image if Wallpaper.pending.count > 0
     end
   end
 end
