@@ -31,7 +31,9 @@ class Wallpaper < ActiveRecord::Base
   scope :pending, where(status: 'pending')
 
   def download_image
-    update_attributes(status: 'downloading')
+    status = 'downloading'
+    save(validate: false)
+    # update_attributes({ status: 'downloading' })
     Resque.enqueue(WallpaperDownload, id) if image_src
   end
 
