@@ -27,6 +27,7 @@ module Crawler
       get_listing_pages(page)
       get_wallpapers
       self
+      puts "Done! #{ @count }/#{ @total }"
     end
 
     def log(args)
