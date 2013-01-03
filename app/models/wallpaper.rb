@@ -14,7 +14,9 @@ class Wallpaper < ActiveRecord::Base
     },
     bucket: 'wallpapersbr'
 
-  attr_accessible :image, :image_src, :status, :source, :source_url, :tags, :title
+  attr_accessible :image, :image_src, :image_file_name, :image_content_type,
+    :image_file_size, :image_updated_at, :image_meta, :image_fingerprint,
+    :status, :source, :source_url, :tags, :title
 
   # associations
   belongs_to :source
@@ -28,13 +30,21 @@ class Wallpaper < ActiveRecord::Base
   # scopes
   scope :random, order: 'RAND()'
   scope :downloading, where(status: 'downloading')
+  scope :downloaded, where(status: 'downloaded')
   scope :pending, where(status: 'pending')
 
   def download_image
-    status = 'downloading'
-    save(validate: false)
-    # update_attributes({ status: 'downloading' })
+    self.status = 'downloading'
+    self.save(validate: false)
     Resque.enqueue(WallpaperDownload, id) if image_src
+  end
+
+  def downloading?
+    status == 'downloading'
+  end
+
+  def pending?
+    status == 'pending'
   end
 
   private
