@@ -16,6 +16,15 @@ module Crawler
         @listing_pages << "#{ @home_url }index-#{ page }.html"
       end
 
+      # http://www.avto.goodfon.com/
+      avto_home = 'http://www.avto.goodfon.com/'
+      page = Nokogiri::HTML(open_url avto_home)
+      total_pages = page.css('.pageinfoen div').first.content.to_i
+      @listing_pages << avto_home
+      2.upto(total_pages).each do |page|
+        @listing_pages << "#{ avto_home }index-#{ page }.html"
+      end
+
       super(page)
     end
 
