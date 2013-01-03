@@ -1,5 +1,5 @@
 # encoding: utf-8
-require 'base'
+require "#{ Rails.root }/lib/tasks/crawler/base"
 module Crawler
   class Interfacelift < Crawler::Base
     def initialize

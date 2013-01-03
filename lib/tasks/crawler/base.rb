@@ -1,5 +1,5 @@
-require 'file_helper'
-require 'url_opener'
+require "#{ Rails.root }/lib/tasks/crawler/file_helper"
+require "#{ Rails.root }/lib/tasks/crawler/url_opener"
 require 'nokogiri'
 
 module Crawler
