@@ -38,6 +38,8 @@ module Crawler
     end
 
     def crawl_wallpaper(url)
+      return if Wallpaper.where(source_url: url).exists?
+
       log "\ncrawling wallpaper #{ @count += 1 }/#{ @total } from #{ url }"
       page = Nokogiri::HTML(open_url url)
 
