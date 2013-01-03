@@ -41,7 +41,7 @@ module Crawler
     end
 
     def open_url(url, options={})
-      default_options = { verification_matcher: @verification_matcher, proxy: true }
+      default_options = { verification_matcher: @verification_matcher, proxy: false }
       options.merge!(default_options)
       Crawler::Base.open_url(url, options)
     end
