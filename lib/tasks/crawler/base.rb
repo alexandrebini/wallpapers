@@ -17,6 +17,7 @@ module Crawler
       @wallpaper_threads = []
       @total = 0
       @count = 0
+      @listing_count = 0
       @home_url = options[:home_url]
       @verification_matcher = options[:verification_matcher]
       @threads_per_page = 2
@@ -87,7 +88,7 @@ module Crawler
     end
 
     def crawl_listing_page(url)
-      log "\ncrawling a list of wallpapers from #{ url }"
+      log "\ncrawling a list of wallpapers #{ @listing_count += 1 }/#{ @listing_pages.size } from #{ url }"
       begin
         Nokogiri::HTML(open_url url)
       rescue
