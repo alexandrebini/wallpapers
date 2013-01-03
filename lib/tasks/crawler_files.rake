@@ -123,8 +123,10 @@ namespace :crawler do
 
   desc 'check if each image is valid. This is done by checking the percentage of gray (#808080) of the file'
   task check_images_integrity: :environment do
-    source_dir = '/Volumes/BINI/wallpapers'
-    target_dir = '/Volumes/BINI/wallpapers-to-check'
+    # source_dir = '/Volumes/BINI/wallpapers'
+    # target_dir = '/Volumes/BINI/wallpapers-to-check'
+    source_dir = "#{ Rails.root }/public/system/wallpapers"
+    target_dir = "#{ Rails.root }/public/system/wallpapers-to-check"
     FileUtils.mkdir_p target_dir
 
     images = Crawler::FileHelper.images(dir: source_dir)

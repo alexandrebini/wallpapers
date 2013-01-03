@@ -1,3 +1,4 @@
+require './base'
 module Crawler
   class Goodfon < Crawler::Base
     def initialize
