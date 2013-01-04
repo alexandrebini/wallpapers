@@ -27,7 +27,7 @@
   nano ~/.ssh/config
     Host wallpapers
       HostName 54.235.194.194
-      User root
+      User wallpapers
 
   sudo nano /etc/hosts
     ### wallpapers ###

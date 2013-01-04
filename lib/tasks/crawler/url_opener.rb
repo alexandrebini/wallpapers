@@ -63,7 +63,7 @@ module Crawler
         begin
           http = Net::HTTP.start(uri.host)
           body = response_is_valid?(http, uri, options)
-          raise "Body is nil" if body.blank?
+          raise "Body is invalid" if body.blank?
           GC.start
           return body
         rescue Exception => e
@@ -80,18 +80,14 @@ module Crawler
         request = Net::HTTP::Get.new(uri.request_uri)
         response = http.request(request)
 
-        if response.kind_of?(Net::HTTPSuccess) && body_is_valid?(response, options)
+        if response.kind_of?(Net::HTTPSuccess) && body_is_valid?(response, uri, options)
           return response.body
         else
           return nil
         end
       end
 
-      def header_is_valid(response)
-
-      end
-
-      def body_is_valid?(response, options={})
+      def body_is_valid?(response, uri, options={})
         return false if response.body.blank?
 
         # validates the verification matcher
@@ -106,7 +102,22 @@ module Crawler
         return false if response['content-length'] &&
           response['content-length'].to_i < response.body.bytesize
 
+        # use jpeginfo to check corrupted files
+        filename = File.basename(uri.to_s)
+        if options[:image] && File.extname(filename) == '.jpg'
+          tempfile = Tempfile.new(filename)
+          tempfile.binmode
+          tempfile.write response.body
+          tempfile.rewind
+          return false if system "jpeginfo -c \"#{ tempfile.path }\" | grep -E \"WARNING|ERROR\""
+        end
+
         return true
+      ensure
+        if tempfile
+          tempfile.close
+          tempfile.unlink   # deletes the temp file
+        end
       end
 
       def proxy
