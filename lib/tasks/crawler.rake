@@ -18,7 +18,7 @@ namespace :crawler do
       puts "Please start resque: COUNT=10 QUEUE=* rake resque:workers"
     else
       puts "Starting #{ jobs } jobs..."
-      Wallpaper.pending.random.limit(jobs).each do |wallpaper|
+      Wallpaper.pending.random.limit(jobs+1).each do |wallpaper|
         wallpaper.download_image
       end
     end
