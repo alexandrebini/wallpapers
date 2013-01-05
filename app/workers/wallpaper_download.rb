@@ -19,7 +19,7 @@ class WallpaperDownload
         file = File.open(local_image)
       else
         source = 'remote'
-        file = StringIO.new(open_url wallpaper.image_src, proxy: false, min_size: 22.kilobytes)
+        file = StringIO.new(open_url wallpaper.image_src, proxy: false, min_size: 22.kilobytes, image: true)
       end
 
       wallpaper.image = file
