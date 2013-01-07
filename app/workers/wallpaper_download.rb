@@ -36,7 +36,8 @@ class WallpaperDownload
       if wallpaper
         wallpaper.status = 'pending'
         wallpaper.save(validate: false)
-        download_logger "\nError on wallpaper #{ wallpaper.id }: #{ wallpaper.image_src } (#{ source }). #{ e }"
+        download_logger "\nError on wallpaper #{ wallpaper.id }: #{ wallpaper.image_src } (#{ source }). #{ e }" + e.backtrace.join("\n")
+
       else
         download_logger "\nError on wallpaper #{ wallpaper_id } (#{ source }). #{ e }"
       end
