@@ -1,0 +1,33 @@
+@import blueprint/liquid
+@import blueprint/reset
+
+$blueprint-liquid-grid-columns: 24
+$blueprint-liquid-container-width: 100%
+
+body
+  +container
+
+nav
+  +column(3)
+  background: #CCC
+  margin-bottom: -5000px
+  padding-bottom: 5000px
+  ul
+    padding: 10px 0 0 10px
+
+    li.title
+      font-weight: bold
+      padding-left: 0
+    li
+      padding-left: 10px
+
+header
+  +column(21, true)
+  border-bottom: 1px solid #CCC
+  font-weight: bold
+  font-size: 18px
+  padding: 5px 0
+  margin-bottom: 10px
+
+section
+  +column(21, true)

@@ -1,0 +1,26 @@
+!!! 5
+%html
+  %head
+    %title Wallpapers
+    = stylesheet_link_tag 'admin/application', media: 'all'
+    = javascript_include_tag 'admin/application'
+    = csrf_meta_tags
+
+  %body
+    %nav
+      %ul
+        %li.title= link_to 'Wallpapers', admin_wallpapers_path
+        %li= link_to 'New', new_admin_wallpaper_path
+        %li= link_to 'Pending', checking_admin_wallpapers_path
+      %ul
+        %li.title Tags
+        %li New
+      %ul
+        %li.title Sources
+        %li New
+
+    %header
+      = content_for(:header)
+
+    %section
+      %article= yield

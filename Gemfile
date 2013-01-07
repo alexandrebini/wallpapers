@@ -18,6 +18,7 @@ gem 'resque', '1.23.0', require: 'resque/server'
 
 group :assets do
   gem 'sass-rails', '3.2.5'
+  gem 'compass-rails', '1.0.3'
   gem 'coffee-rails', '3.2.2'
   gem 'uglifier', '1.3.0'
 end

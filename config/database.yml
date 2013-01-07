@@ -2,9 +2,9 @@ development:
   adapter: mysql2
   encoding: utf8
   reconnect: true
-  database: wallpapers_development
   pool: 360
   checkout_timeout: 720
+  database: wallpapers_development
   username: root
   password:
 

@@ -41,3 +41,21 @@ namespace :assets do
     run "cd #{ release_path }; RAILS_ENV=#{ rails_env } bundle exec rake paperclip:refresh:missing_styles"
   end
 end
+
+namespace :db do
+  desc 'Download production database and restore local'
+  task :backup do
+    backup_path = "#{ deploy_to }/backups"
+    run "mkdir -p #{ backup_path }"
+    yml = YAML.load_file('config/database.yml')
+
+    name = "#{ yml['production']['database'] }-#{ DateTime.now.strftime '%Y-%m-%d_%H-%M-%S' }.sql"
+
+    run "mysqldump -u #{ yml['production']['username'] } --password=#{ yml['production']['password'] } -h #{ yml['production']['host'] } #{ yml['production']['database'] } > #{ backup_path }/#{ name }"
+    download "#{ backup_path }/#{ name }", "tmp/#{ name }", via: :scp
+
+    system 'rake db:drop; rake db:create'
+    system "mysql -u #{ yml['development']['username'] } --password=#{ yml['development']['password'] } #{ yml['development']['database'] } < tmp/#{ name }"
+    system 'rake db:migrate'
+  end
+end
