@@ -1,11 +1,18 @@
 Wallpapers::Application.routes.draw do
-  namespace :admin do
-    root to: 'wallpapers#index'
+  class FormatTest
+    attr_accessor :mime_type
 
-    resources :wallpapers do
-      collection do
-        get :checking
-      end
+    def initialize(format)
+      @mime_type = Mime::Type.lookup_by_extension(format)
     end
+
+    def matches?(request)
+      request.format == mime_type
+    end
+  end
+
+  namespace :admin do
+    resources :wallpapers, except: :edit, constraints: FormatTest.new(:json)
+    get '/(*foo)', to: 'pages#index', constraints: FormatTest.new(:html)
   end
 end

@@ -1,7 +1,9 @@
 class Admin::WallpapersController < Admin::BaseController
   def index
+    render json: Wallpaper.limit(100).all
   end
 
-  def checking
+  def show
+    render json: Wallpaper.find(params[:id])
   end
 end
