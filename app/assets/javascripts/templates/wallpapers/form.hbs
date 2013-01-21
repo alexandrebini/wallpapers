@@ -1,1 +1,11 @@
-form...
+<form>
+  <fieldset>
+    <label {{bindAttr for='sourceUrlField.elementId'}}>Source url</label>
+    {{view Ember.TextField valueBinding='source_url' name='source_url' viewName='sourceUrlField'}}
+
+    <label {{bindAttr for='imageSrc.elementId'}}>Image url</label>
+    {{view Ember.TextField valueBinding='image_url' name='image_url' viewName='imageUrlField'}}
+
+    <a href='#' {{action save}} class='btn btn-success'>{{buttonTitle}}</a>
+  </fieldset>
+</form>
