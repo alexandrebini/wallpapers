@@ -16,6 +16,13 @@ App.AdminRoute = Ember.Route.extend
     @controllerFor('application').set('currentRoute', 'home')
 
 App.WallpapersRoute = Ember.Route.extend
-  setupController: (controller, model) ->
+  setupController: ->
     @controllerFor('application').set('header', 'Wallpapers')
-    @controllerFor('application').set('currentRoute', 'home')
+    @controllerFor('application').set('currentRoute', 'photos')
+
+App.WallpapersNewRoute = App.WallpapersRoute.extend
+  model: ->
+    App.Wallpaper.createRecord()
+  setupController: (controller, model) ->
+    @_super()
+    controller.set('content', model)

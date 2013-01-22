@@ -1,11 +1,25 @@
 <form>
   <fieldset>
-    <label {{bindAttr for='sourceUrlField.elementId'}}>Source url</label>
-    {{view Ember.TextField valueBinding='source_url' name='source_url' viewName='sourceUrlField'}}
+    <p>
+      <label {{bindAttr for='sourceUrlField.elementId'}}>Source url</label>
+      <br>
+      {{view Ember.TextField valueBinding='source_url' name='source_url' viewName='sourceUrlField'}}
+    </p>
 
-    <label {{bindAttr for='imageSrc.elementId'}}>Image url</label>
-    {{view Ember.TextField valueBinding='image_url' name='image_url' viewName='imageUrlField'}}
+    <p>
+      <label {{bindAttr for='imageSrc.elementId'}}>Image url</label>
+      <br>
+      {{view Ember.TextField valueBinding='image_url' name='image_url' viewName='imageUrlField'}}
+    </p>
 
-    <a href='#' {{action save}} class='btn btn-success'>{{buttonTitle}}</a>
+    <p>
+      <label {{bindAttr for='status.elementId'}}>Status</label>
+      <br>
+      {{view Ember.Select contentBinding='controller.status' optionValuePath='content.id'
+        optionLabelPath='content.name' valueBinding='content.status'}}
+    </p>
+
+    <button {{ action save }}>Save</button>
+
   </fieldset>
 </form>
