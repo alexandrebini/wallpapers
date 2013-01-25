@@ -1,0 +1,13 @@
+development:
+  storage: :filesystem
+  s3:
+    bucket:
+    credentials: {}
+
+production:
+  storage: :s3
+  s3:
+    bucket: wallpapersbr
+    credentials:
+      access_key_id: AKIAJERSSKD55B24HNYA
+      secret_access_key: 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

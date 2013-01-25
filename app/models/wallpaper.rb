@@ -5,18 +5,16 @@ class Wallpaper < ActiveRecord::Base
   translates :title, :slug
   friendly_id :title, use: :globalize
   has_attached_file :image,
-    path: '/wallpapers/:fingerprint/:basename_:style.:extension',
+    path: ':rails_root/public/system/wallpapers/:id/:fingerprint/:basename_:style.:extension',
+    url: '/system/wallpapers/:id/:fingerprint/:basename_:style.:extension',
     styles: { thumb: '128x128#' },
-    storage: :s3,
-    s3_credentials: {
-      access_key_id: 'AKIAJERSSKD55B24HNYA',
-      secret_access_key: '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'
-    },
-    bucket: 'wallpapersbr'
+    storage: Settings.storage,
+    s3_credentials: Settings.s3.credentials,
+    bucket: Settings.s3.bucket
 
   attr_accessible :image, :image_src, :image_file_name, :image_content_type,
     :image_file_size, :image_updated_at, :image_meta, :image_fingerprint,
-    :status, :source, :source_url, :tags, :title
+    :status, :source, :source_id, :source_url, :tags, :title
 
   # associations
   belongs_to :source

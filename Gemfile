@@ -15,6 +15,7 @@ gem 'friendly_id', '4.0.9'
 
 gem 'nokogiri', '1.5.6'
 gem 'resque', '1.23.0', require: 'resque/server'
+gem 'settingslogic', '2.0.9'
 
 group :assets do
   gem 'sass-rails', '3.2.5'
