@@ -1,0 +1,9 @@
+.wallpaper
+  = image_tag wallpaper.image.url(:thumb), size: '400x300'
+  .tags
+    - wallpaper.tags.each do |tag|
+      = link_to tag.name, '#'
+  .colors
+    - wallpaper.colors.each do |color|
+      = link_to color.hex, '#', style: "background-color: #{ color.hex }"
+

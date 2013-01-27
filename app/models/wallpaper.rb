@@ -7,7 +7,7 @@ class Wallpaper < ActiveRecord::Base
   has_attached_file :image,
     path: ':rails_root/public/system/wallpapers/:id/:fingerprint/:basename_:style.:extension',
     url: '/system/wallpapers/:id/:fingerprint/:basename_:style.:extension',
-    styles: { thumb: '128x128#' },
+    styles: { thumb: '400x300#' },
     storage: Settings.storage,
     s3_credentials: Settings.s3.credentials,
     bucket: Settings.s3.bucket

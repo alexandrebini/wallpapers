@@ -1,0 +1,6 @@
+#wallpapers{ data: { total_pages: @wallpapers.total_pages } }
+  %div{ class: "page-#{ @page }" }
+    = @body.html_safe
+
+- content_for :javascript do
+  = javascript_tag 'new Scroller()'

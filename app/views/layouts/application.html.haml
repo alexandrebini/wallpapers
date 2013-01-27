@@ -3,7 +3,16 @@
   %head
     %title Wallpapers
     = stylesheet_link_tag 'application', media: 'all'
-    = javascript_include_tag 'application'
     = csrf_meta_tags
   %body
-    = yield
+
+    %nav
+      %h1 Wallpapers
+
+    %header
+
+    %section
+      %article= yield
+
+    = javascript_include_tag 'application'
+    = yield(:javascript)
