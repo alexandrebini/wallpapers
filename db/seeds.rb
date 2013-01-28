@@ -16,7 +16,8 @@ YAML.load_file("#{ Rails.root }/db/seeds.yml").each do |attrs|
       Tag.find_or_create_by_name(name)
     end,
     image: image,
-    image_file_name: File.basename(attrs[:image_src])
+    image_file_name: File.basename(attrs[:image_src]),
+    views: (rand * 9999).to_i
   )
 
   image.close

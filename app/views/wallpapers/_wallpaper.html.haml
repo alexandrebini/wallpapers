@@ -1,5 +1,10 @@
-.wallpaper
-  = image_tag wallpaper.image.url(:thumb), size: '400x300'
+%div{ class: wallpaper_class(wallpaper, highlight) }
+  = link_to '#' do
+    - if is_highlight_wallpaper?(wallpaper, highlight)
+      = image_tag wallpaper.image.url(:highlight), size: '844x300'
+    - else
+      = image_tag wallpaper.image.url(:thumb), size: '400x300'
+
   .tags
     - wallpaper.tags.each do |tag|
       = link_to tag.name, '#'

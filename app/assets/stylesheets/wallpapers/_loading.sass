@@ -1,0 +1,17 @@
+#wallpapers
+  .page
+    float: left
+    margin: 10px
+    width: 80%
+
+    span
+      +box-shadow(#CCC 0px 0px 5px)
+      +border-radius(2px)
+      background: #DDD
+      line-height: 26px
+      padding: 2px 10px
+
+    &.loading
+      span
+        background: url(#{ asset_path('loading.gif', image) }) no-repeat 70px 5px #DDD
+        padding-right: 30px

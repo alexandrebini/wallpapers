@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 6) do
+ActiveRecord::Schema.define(:version => 7) do
 
   create_table "colors", :force => true do |t|
     t.string "hex"
@@ -72,6 +72,7 @@ ActiveRecord::Schema.define(:version => 6) do
     t.string   "status"
     t.datetime "created_at",         :null => false
     t.datetime "updated_at",         :null => false
+    t.integer  "views"
   end
 
   add_index "wallpapers", ["created_at"], :name => "index_wallpapers_on_created_at"
@@ -79,6 +80,7 @@ ActiveRecord::Schema.define(:version => 6) do
   add_index "wallpapers", ["slug"], :name => "index_wallpapers_on_slug"
   add_index "wallpapers", ["source_id"], :name => "index_wallpapers_on_source_id"
   add_index "wallpapers", ["status"], :name => "index_wallpapers_on_status"
+  add_index "wallpapers", ["views"], :name => "index_wallpapers_on_views"
 
   create_table "wallpapers_colors", :id => false, :force => true do |t|
     t.integer "wallpaper_id"

@@ -1,4 +1,4 @@
-source 'https://rubygems.org'
+source :rubygems
 
 gem 'rails', '3.2.10'
 gem 'mysql2', '0.3.11'
@@ -22,7 +22,6 @@ gem 'will_paginate', '3.0.4'
 group :assets do
   gem 'sass-rails', '3.2.5'
   gem 'compass-rails', '1.0.3'
-  gem 'susy', '1.0.5'
   gem 'coffee-rails', '3.2.2'
   gem 'uglifier', '1.3.0'
   gem 'quiet_assets', '1.0.1'

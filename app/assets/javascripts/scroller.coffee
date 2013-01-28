@@ -2,6 +2,7 @@ class window.Scroller
   constructor: ->
     @firstPage = @currentPage()
     @lastPage = @firstPage
+    @paginationLocked = false
     @totalPages = $('#wallpapers').data('total_pages')
     $(window).scroll => @scroll()
 
@@ -18,7 +19,8 @@ class window.Scroller
     @lastScrollTop = scrollTop
 
   loadMore: (direction) ->
-    console.log direction
+    return if @paginationLocked
+
     switch direction
       when 'down'
         if @lastPage < @totalPages
@@ -34,18 +36,27 @@ class window.Scroller
   getData: (page, direction) ->
     return if $("#wallpapers pg-#{ page }").length != 0
 
-    container = $("<div class='page-#{ page } loading'></div>")
+    container = $("<div class='page loading' data-page=#{ page }><span>page #{ page }</span></div>")
     if direction == 'down'
       container.appendTo $('#wallpapers')
     else
       container.prependTo $('#wallpapers')
 
+    $('#wallpapers').masonry('appended', container)
+    @paginationLocked = true
+
     $.ajax
       url: "/pg-#{ page }"
       dataType: 'json'
       success: (response) =>
-        container.append(response.body)
         container.removeClass('loading')
+        container.addClass('loaded')
+
+        body = $(response.body)
+        body.insertAfter(container)
+        $('#wallpapers').masonry('appended', body)
+        @paginationLocked = false
+
       error: (e) =>
         console.log e
 
