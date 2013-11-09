@@ -45,7 +45,7 @@ module Crawler
         retry unless attempts >= options[:max_attempts]
       end
     ensure
-      http.finish if http
+      http.finish rescue nil
     end
 
     def open_url_without_proxy(uri, options)
@@ -62,7 +62,7 @@ module Crawler
         retry unless attempts >= options[:max_attempts]
       end
     ensure
-      http.finish if http
+      http.finish rescue nil
     end
 
     def response_is_valid?(http, uri, options={})

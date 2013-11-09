@@ -3,7 +3,7 @@ development:
   encoding: utf8
   reconnect: true
   pool: 360
-  # checkout_timeout: 720
+  checkout_timeout: 720
   database: wallpapers_development
   username: root
   password:
@@ -16,3 +16,13 @@ test:
   # pool: 50
   username: root
   password:
+
+staging:
+  adapter: mysql2
+  encoding: utf8
+  reconnect: true
+  pool: 360
+  checkout_timeout: 720
+  database: wallpapers_staging
+  username: wallpapers
+  password: dCue2z8TEwK

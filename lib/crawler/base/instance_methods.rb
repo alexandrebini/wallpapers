@@ -8,8 +8,7 @@ module Crawler
       @pages_threads = []
       @total = 0
       @count = 0
-      @wallpaper_threads = []
-      @threads_per_page = 2
+      @threads_number = 20
 
       page = Nokogiri::HTML(open_url send(self.crawler_options[:source]).url)
       get_pages(page)
@@ -49,11 +48,7 @@ module Crawler
       @total += links.size
 
       begin
-        links.shuffle.each_slice(slice_size links).each do |links_slice|
-          @wallpaper_threads << Thread.new do
-            links_slice.each { |link| crawl_wallpaper(link) }
-          end
-        end
+        links.shuffle.each { |link| crawl_wallpaper(link) }
       rescue Exception => e
         fail_log "\n #{ e }\n" + e.backtrace.join("\n")
       end
@@ -73,7 +68,6 @@ module Crawler
 
     def finalize!
       @pages_threads.each(&:join)
-      @wallpaper_threads.each(&:join)
     end
 
     private
@@ -85,7 +79,7 @@ module Crawler
     end
 
     def slice_size(array)
-      array.size > @threads_per_page ? array.size/@threads_per_page : array.size
+      array.size > @threads_number ? array.size/@threads_number : array.size
     end
 
     def log(args)
