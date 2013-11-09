@@ -1,7 +1,7 @@
 require "#{ Rails.root }/app/workers/wallpaper_download"
 
 namespace :crawler do
-  desc 'import wallpapers from hdwallpapers.in'
+  desc 'import all wallpapers'
   task start: :environment do
     [
       Thread.new{ Crawler::Goodfon.start! },
@@ -12,15 +12,9 @@ namespace :crawler do
 
   desc 'start downloads'
   task download: :environment do
-    jobs = Resque.workers.count
-
-    if jobs == 0
-      puts "Please start resque: COUNT=10 QUEUE=* rake resque:workers"
-    else
-      puts "Starting #{ jobs } jobs..."
-      Wallpaper.pending.random.limit(jobs+1).each do |wallpaper|
-        wallpaper.download_image
-      end
+    puts "Starting #{ jobs } jobs..."
+    Wallpaper.pending.random.limit(jobs+1).each do |wallpaper|
+      wallpaper.download_image
     end
   end
 

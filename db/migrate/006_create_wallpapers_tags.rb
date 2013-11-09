@@ -1,6 +1,6 @@
 class CreateWallpapersTags < ActiveRecord::Migration
   def up
-    create_table :wallpapers_tags, id: false do |t|
+    create_table :wallpapers_tags, id: false, options: 'engine=MyISAM DEFAULT CHARSET=utf8' do |t|
       t.references :wallpaper
       t.references :tag
     end

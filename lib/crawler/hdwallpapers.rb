@@ -1,6 +1,5 @@
-require "#{ Rails.root }/lib/tasks/crawler/base"
 module Crawler
-  class Hdwallpapers < Crawler::Base
+  class Hdwallpapers
     def initialize
       super(
         home_url: 'http://www.hdwallpapers.in/',
@@ -51,7 +50,7 @@ module Crawler
     end
 
     def parse_source
-      @source ||= Source.find_or_create_by_name_and_url('HD Wallpapers', 'http://www.hdwallpapers.in')
+      @source ||= Source.where(name: 'HD Wallpapers', url: 'http://www.hdwallpapers.in').first_or_create
     end
 
     def parse_title(page)

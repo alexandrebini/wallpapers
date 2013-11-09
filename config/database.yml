@@ -13,16 +13,16 @@ test:
   encoding: utf8
   reconnect: true
   database: wallpapers_test
-  pool: 50
+  # pool: 50
   username: root
   password:
 
-production:
+staging:
   adapter: mysql2
   encoding: utf8
   reconnect: true
-  database: wallpapers_production
-  pool: 50
-  host: 54.235.194.194
+  pool: 360
+  checkout_timeout: 720
+  database: wallpapers_staging
   username: wallpapers
-  password: 6ivqxTkK6m
+  password: dCue2z8TEwK

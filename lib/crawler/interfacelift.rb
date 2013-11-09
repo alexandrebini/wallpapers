@@ -1,7 +1,5 @@
-# encoding: utf-8
-require "#{ Rails.root }/lib/tasks/crawler/base"
 module Crawler
-  class Interfacelift < Crawler::Base
+  class Interfacelift
     def initialize
       super(
         home_url: 'http://interfacelift.com/',
@@ -57,7 +55,7 @@ module Crawler
     end
 
     def parse_source
-      @source ||= Source.find_or_create_by_name_and_url('InterfaceLIFT', 'http://interfacelift.com')
+      @source ||= Source.where(name: 'InterfaceLIFT', url: 'http://interfacelift.com').first_or_create
     end
 
     def parse_title(page)
