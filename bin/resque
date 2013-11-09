@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+require 'resque/cli'
+
+Resque::CLI.start(ARGV)

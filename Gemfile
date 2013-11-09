@@ -15,8 +15,8 @@ gem 'globalize', '4.0.0.alpha.2'
 gem 'friendly_id', '5.0.1'
 
 gem 'nokogiri', '1.6.0'
-gem 'resque', '1.25.1'
-# gem 'resque', "~> 2.0.0.pre.1", github: "resque/resque"
+# gem 'resque', '1.25.1'
+gem 'resque', '~> 2.0.0.pre.1', github: 'resque/resque'
 gem 'settingslogic', '2.0.9'
 
 gem 'paperclip', '3.5.2'
@@ -24,9 +24,10 @@ gem 'paperclip-meta', '0.4.3'
 gem 'miro', '0.2.3'
 
 group :development do
-  gem 'unicorn', '4.7.0'
   gem 'capistrano', '3.0.1'
-  gem 'rvm-capistrano', '1.5.1'
+  gem 'capistrano-rvm', '0.0.3'
+  gem 'capistrano-bundler', '1.0.0'
   gem 'capistrano-ext', '1.2.1'
   gem 'debugger', '1.6.2'
+  gem 'foreman', '0.63.0'
 end
