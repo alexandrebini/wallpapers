@@ -1,5 +1,5 @@
 module Crawler
-  class Hdwallpapers < Crawler::Base
+  class Hdwallpapers
     def initialize
       super(
         home_url: 'http://www.hdwallpapers.in/',

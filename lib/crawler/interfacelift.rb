@@ -1,6 +1,5 @@
-# encoding: utf-8
 module Crawler
-  class Interfacelift < Crawler::Base
+  class Interfacelift
     def initialize
       super(
         home_url: 'http://interfacelift.com/',

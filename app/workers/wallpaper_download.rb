@@ -1,8 +1,6 @@
 require "#{ Rails.root }/lib/crawler/crawler"
 
 class WallpaperDownload
-  include Crawler::UrlOpener
-
   @queue = :wallpapers_queue
 
   class << self
