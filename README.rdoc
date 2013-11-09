@@ -1,7 +1,3 @@
-# resque workers
-  redis-server &
-  COUNT=10 QUEUE=* rake resque:workers
-
 # increase your system limits
   $ sudo nano /etc/launchd.conf
     limit maxfiles 1000000 1000000
@@ -18,10 +14,6 @@
   sudo chmod 777 /Volumes/BINI
   sudo mount -o force -t hfsplus /dev/sdb2 /Volumes/BINI/
   sudo umount /Volumes/Bini
-
-# clear redis queue
-  Resque.redis.del "queue:wallpapers_queue"
-  Resque::Worker.working.each {|w| w.done_working}
 
 # deploy
   nano ~/.ssh/config

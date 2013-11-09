@@ -32,7 +32,7 @@ class Wallpaper < ActiveRecord::Base
   def download_image
     self.status = 'downloading'
     self.save(validate: false)
-    Resque.enqueue(WallpaperDownload, id) if image_src
+    WallpaperDownload.perform_async(id) if image_src
   end
 
   def downloading?

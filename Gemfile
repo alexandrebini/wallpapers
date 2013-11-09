@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'rails', '4.0.1'
 gem 'mysql2', '0.3.14'
+gem 'sinatra', '1.4.4', require: false
 
 gem 'haml-rails', '0.4'
 gem 'sass-rails', '4.0.1'
@@ -15,7 +16,7 @@ gem 'globalize', '4.0.0.alpha.2'
 gem 'friendly_id', '5.0.1'
 
 gem 'nokogiri', '1.6.0'
-gem 'resque', '~> 2.0.0.pre.1', github: 'resque/resque'
+gem 'sidekiq', '2.16.1'
 gem 'settingslogic', '2.0.9'
 
 gem 'paperclip', '3.5.2'
