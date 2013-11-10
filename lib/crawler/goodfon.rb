@@ -40,9 +40,9 @@ module Crawler
     end
 
     def parse_image(options)
-      id = options[:url].scan(/\d+/).first
-      resolution = options[:page].xpath('/html/body/div[1]/div[9]/div[2]/div/table/tr/td[3]/a').first.content.strip
-      "http://wallpaper.goodfon.com/image/#{ id }-#{ resolution }.jpg"
+      thumb_url = options[:page].xpath('//*[@id="img"]/img').attr('src').value
+      id = thumb_url.split('/').last.scan(/\d+/).first
+      "http://#{ URI.parse(thumb_url).host }/image/#{ id }-1024x768.jpg"
     end
 
     private

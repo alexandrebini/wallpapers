@@ -1,4 +1,4 @@
-require "#{ Rails.root }/app/workers/wallpaper_download"
+require "#{ Rails.root }/lib/crawler/crawler"
 
 namespace :crawler do
   desc 'import all wallpapers'
@@ -12,8 +12,9 @@ namespace :crawler do
 
   desc 'start downloads'
   task download: :environment do
+    jobs = 10
     puts "Starting #{ jobs } jobs..."
-    Wallpaper.pending.random.limit(jobs+1).each do |wallpaper|
+    Wallpaper.pending.random.limit(jobs).each do |wallpaper|
       wallpaper.download_image
     end
   end
@@ -56,5 +57,6 @@ namespace :crawler do
     puts "let's work..."
     puts "#{ total_downloaded } downloaded"
     puts "#{ total - total_downloaded } to download"
+    Rake::Task['crawler:download'].invoke
   end
 end

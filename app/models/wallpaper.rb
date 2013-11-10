@@ -5,9 +5,9 @@ class Wallpaper < ActiveRecord::Base
   translates :title, :slug
   friendly_id :title, use: :slugged # :globalize
   has_attached_file :image,
-    path: ':rails_root/public/system/wallpapers/:id/:fingerprint/:basename_:style.:extension',
-    url: '/system/wallpapers/:id/:fingerprint/:basename_:style.:extension',
-    styles: { thumb: '400x300#', highlight: '850x300#' }
+    path: ':rails_root/public/system/wallpapers/:id_partition/:fingerprint/:basename_:style.:extension',
+    url: '/system/wallpapers/:id_partition/:fingerprint/:basename_:style.:extension',
+    styles: { thumb: '400x300#' }
 
   # associations
   belongs_to :source
@@ -15,8 +15,8 @@ class Wallpaper < ActiveRecord::Base
   has_and_belongs_to_many :tags, join_table: :wallpapers_tags
 
   # callbacks
-  # after_create :download_image
-  # after_save :analyse_colors
+  after_create :download_image
+  after_save :analyse_colors
 
   # scopes
   scope :random, -> { order('RAND()') }
