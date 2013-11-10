@@ -5,41 +5,33 @@ class WallpaperDownload
   sidekiq_options retry: false, unique: :all
 
   def perform(wallpaper_id)
-    Timeout.timeout(10.minutes.to_i) do
-      @wallpaper = Wallpaper.find(wallpaper_id)
+    @wallpaper = Wallpaper.find(wallpaper_id)
 
-      unless @wallpaper.downloading?
-        download_logger "\nWallpaper #{ @wallpaper.id } is not downloading. Current status: #{ @wallpaper.status }"
-        return
-      end
-
-      @filename = File.basename(@wallpaper.image_src)
-      @local_image = Crawler::FileHelper.find_local_image(@filename)
-      if @local_image
-        @source = 'local'
-        @file = File.open(@local_image)
-      else
-        @source = 'remote'
-        @file = StringIO.new(Crawler::UrlOpener.instance.open_url @wallpaper.image_src,
-          proxy: false, min_size: 22.kilobytes, image: true)
-      end
-
-      @wallpaper.image = @file
-      @wallpaper.image_file_name = @filename
-      @wallpaper.status = 'downloaded'
-      @wallpaper.colors.destroy_all
-
-      if @wallpaper.save
-        download_logger "\nWallpaper #{ @wallpaper.id } image: #{ @wallpaper.image_src } (#{ @source })"
-      else
-        raise @wallpaper.errors.full_messages.join(' ')
-      end
+    unless @wallpaper.downloading?
+      download_logger "\nWallpaper #{ @wallpaper.id } is not downloading. Current status: #{ @wallpaper.status }"
+      return
     end
-  rescue Timeout::Error
-    if @wallpaper
-      @wallpaper.status = 'pending'
-      @wallpaper.save(validate: false)
-      download_logger "\nTimeout on wallpaper #{ @wallpaper.id }: #{ @wallpaper.image_src } (#{ @source })"
+
+    @filename = File.basename(@wallpaper.image_src)
+    @local_image = Crawler::FileHelper.find_local_image(@filename)
+    if @local_image
+      @source = 'local'
+      @file = File.open(@local_image)
+    else
+      @source = 'remote'
+      @file = StringIO.new(Crawler::UrlOpener.instance.open_url @wallpaper.image_src,
+        proxy: false, min_size: 22.kilobytes, image: true)
+    end
+
+    @wallpaper.image = @file
+    @wallpaper.image_file_name = @filename
+    @wallpaper.status = 'downloaded'
+    @wallpaper.colors.destroy_all
+
+    if @wallpaper.save
+      download_logger "\nWallpaper #{ @wallpaper.id } image: #{ @wallpaper.image_src } (#{ @source })"
+    else
+      raise @wallpaper.errors.full_messages.join(' ')
     end
   rescue Exception => e
     if @wallpaper
