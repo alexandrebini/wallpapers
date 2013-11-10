@@ -7,15 +7,15 @@ class WallpaperDownload
       wallpaper = Wallpaper.find(wallpaper_id)
 
       unless wallpaper.downloading?
-        download_logger "\nWallpaper #{ wallpaper.id } is not downloading. Current status: #{ wallpaper.status }"
+        download_logger "\nWallpaper #{ wallpaper.id } is not downloading. Current status: #{ wallpaper.status }", wallpaper
         return
       end
 
-      filename = File.basename(wallpaper.image_src)
-      local_image = Crawler::FileHelper.find_local_image(filename)
-      if local_image
+      @filename = File.basename(wallpaper.image_src)
+      @local_image = Crawler::FileHelper.find_local_image(@filename)
+      if @local_image
         source = 'local'
-        file = File.open(local_image)
+        file = File.open(@local_image)
       else
         source = 'remote'
         file = StringIO.new(Crawler::UrlOpener.instance.open_url wallpaper.image_src,
@@ -23,12 +23,12 @@ class WallpaperDownload
       end
 
       wallpaper.image = file
-      wallpaper.image_file_name = filename
+      wallpaper.image_file_name = @filename
       wallpaper.status = 'downloaded'
       wallpaper.colors.destroy_all
 
       if wallpaper.save
-        download_logger "\nWallpaper #{ wallpaper.id } image: #{ wallpaper.image_src } (#{ source })"
+        download_logger "\nWallpaper #{ wallpaper.id } image: #{ wallpaper.image_src } (#{ source })", wallpaper
       else
         raise wallpaper.errors.full_messages.join(' ')
       end
@@ -37,25 +37,29 @@ class WallpaperDownload
     if wallpaper
       wallpaper.status = 'pending'
       wallpaper.save(validate: false)
-      download_logger "\nTimeout on wallpaper #{ wallpaper.id }: #{ wallpaper.image_src } (#{ source })"
+      download_logger "\nTimeout on wallpaper #{ wallpaper.id }: #{ wallpaper.image_src } (#{ source })", wallpaper
     end
   rescue Exception => e
     if wallpaper
       wallpaper.status = 'pending'
       wallpaper.save(validate: false)
-      download_logger "\nError on wallpaper #{ wallpaper.id }: #{ wallpaper.image_src } (#{ source }). #{ e }" + e.backtrace.join("\n")
+      download_logger "\nError on wallpaper #{ wallpaper.id }: #{ wallpaper.image_src } (#{ source }). #{ e }" + e.backtrace.join("\n"), wallpaper
     else
       download_logger "\nError on wallpaper #{ wallpaper_id } (#{ source }). #{ e }"
     end
     return false
   ensure
     file.close rescue nil
-    Crawler::FileHelper.delete_local_image(local_image) if local_image
+    Crawler::FileHelper.delete_local_image(@local_image) if @local_image
   end
 
-  def download_logger(msg)
-    @download_logger ||= Logger.new("#{ Rails.root }/log/download_error.log")
+  def download_logger(msg, wallpaper=nil)
+    logger = if wallpaper.present?
+      Logger.new("#{ Rails.root }/log/#{ wallpaper.source.name }.downloads.log")
+    else
+      Logger.new("#{ Rails.root }/log/download_error.log")
+    end
     puts msg
-    @download_logger << msg
+    logger << msg
   end
 end
