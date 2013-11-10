@@ -1,56 +1,43 @@
 module Crawler
   class Hdwallpapers
-    def initialize
-      super(
-        home_url: 'http://www.hdwallpapers.in/',
-        verification_matcher: 'ykbm8cEoYeNB0RI8VEbksy7+KGBNbzO8MZkfJ+H3Sqg='
-      )
+    extend Crawler::ActMacro
+
+    acts_as_crawler
+
+    def source
+      @source ||= Source.where(name: 'HDWallpapers', url: 'http://www.hdwallpapers.in', verification_matcher: 'UA-5746983-2').first_or_create
     end
 
-    def get_listing_pages(page)
+    def pages_urls(page)
       pages = page.css('div.pagination a')
       total_pages = pages[pages.count-2].content.to_i
 
-      @listing_pages << @home_url
-      2.upto(total_pages).each do |page|
-        @listing_pages << "#{ @home_url }/latest_wallpapers/page/#{ page }"
+      Array.new.tap do |pages|
+        pages << source.url
+        2.upto(total_pages).each do |page|
+          pages << "#{ source.url }/latest_wallpapers/page/#{ page }"
+        end
       end
-
-      super(page)
     end
 
-    def crawl_listing_page(url)
-      page = super(url)
-      links = page.css('ul.wallpapers li a').map do |link|
+    def wallpapers_urls(page)
+      page.css('ul.wallpapers li a').map do |link|
         if link.attr(:href).match('http://')
           link.attr(:href)
         else
-          "#{ @home_url }#{ link.attr(:href) }"
+          "#{ source.url }#{ link.attr(:href) }"
         end
       end
-      crawl_wallpapers(links)
     end
 
-    def crawl_wallpaper(url)
-      log "\ncrawling wallpaper #{ @count += 1 }/#{ @total } from #{ url }"
-      page = Nokogiri::HTML(open_url url)
-
-      image_src = parse_image(page)
-      return if Wallpaper.where(image_src: image_src).exists?
-
-      wallpaper = Wallpaper.create(
-        image_src: image_src,
-        source: parse_source,
-        source_url: url,
-        tags: parse_tags(page),
-        title: parse_title(page)
+    def parse_wallpaper(options)
+      Wallpaper.create(
+        image_src: options[:image_src],
+        source: source,
+        source_url: options[:url],
+        tags: parse_tags(options[:page]),
+        title: parse_title(options[:page])
       )
-    rescue Exception => e
-      fail_log "\n#{ url }\t#{ e.to_s }\n"
-    end
-
-    def parse_source
-      @source ||= Source.where(name: 'HD Wallpapers', url: 'http://www.hdwallpapers.in').first_or_create
     end
 
     def parse_title(page)
@@ -61,40 +48,27 @@ module Crawler
 
     def parse_tags(page)
       page.css('ul.tags li a').map do |tag|
-        Tag.find_or_create_by_name(tag.content.downcase)
+        begin
+          Tag.where(name: tag.content.downcase).first_or_create
+        rescue ActiveRecord::RecordNotUnique
+          retry
+        end
       end
     end
 
-    def parse_image(page)
-      if page.css('.thumbbg1 a').first
-        path = page.css('.thumbbg1 a').first.attr(:href)
-      else
-        bigger_resolution = { width: 0, url: nil }
-        page.css('.wallpaper-resolutions a').each do |link|
-          if link.content == 'Original'
-            bigger_resolution = { width: 'original', url: link.attr(:href) }
-            break
-          else
-            width = link.content.split('x').first.to_i
-            if width > bigger_resolution[:width]
-              bigger_resolution = { width: width, url: link.attr(:href) }
-            end
-          end
-        end
-
-        if bigger_resolution[:url].match(/(.jpg|.png)$/)
-          path = bigger_resolution[:url]
+    def parse_image(options)
+      resolutions = options[:page].css('.wallpaper-resolutions a').map do |resolution|
+        href = resolution.attr('href')
+        if href.match('http://')
+          href
         else
-          # /view/2013_grand_theft_auto_gta_v-2560x1440.html =>
-          # /wallpapers/2013_grand_theft_auto_gta_v-1280x800.jpg
-          path = bigger_resolution[:url].gsub('/view/', '/wallpapers').gsub('.html', '.jpg')
+          "#{ source.url }#{ href }"
         end
       end
 
-      if path.match('http://')
-        path
-      else
-        "#{ @home_url }#{ path }"
+      ['1204x768', '1280x800', '1280x960', ''].each do |preferred_resolution|
+        resolution = resolutions.find{ |url| url.match(preferred_resolution) }
+        return resolution unless resolution.blank?
       end
     end
   end

@@ -2,7 +2,7 @@ module Crawler
   module FileHelper
     class << self
       def images(options={})
-        default_options = { dir: "#{ Rails.root }/public/system/wallpapers" }
+        default_options = { dir: "#{ Rails.root }/public/system/wallpapers*" }
         options = default_options.merge(options)
 
         if options[:cache]

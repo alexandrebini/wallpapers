@@ -1,5 +1,9 @@
+require 'singleton'
+
 module Crawler
   class UrlOpener
+    include Singleton
+
     def open_url(url, options={})
       uri = URI.parse(url)
       options = { max_attempts: 20, proxy: false }.merge(options)
@@ -22,7 +26,7 @@ module Crawler
         return body unless body.blank?
 
         # if does not work, try with proxy
-        error_logger "\nlocalhost marked as denied. Trying with proxy..."
+        error_logger "\nlocalhost marked as denied. Trying with proxy...", uri
         @denied_host = true
         return open_url_with_proxy(uri, options)
       end
@@ -33,13 +37,12 @@ module Crawler
       attempts = 0
       begin
         proxy_uri = URI.parse(proxy)
-
         http = Net::HTTP::Proxy(proxy_uri.host, proxy_uri.port).start(uri.host)
         body = response_is_valid?(http, uri, options)
         raise "Body is nil" if body.blank?
         return body
       rescue Exception => e
-        error_logger "\n#{ uri } (#{ attempts += 1 }/#{ options[:max_attempts] }) \n\t#{ e.to_s }. Proxy #{ proxy } marked as denied, trying again with a new one..."
+        error_logger "\n#{ uri } (#{ attempts += 1 }/#{ options[:max_attempts] }) \n\t#{ e.to_s }. Proxy #{ proxy } marked as denied, trying again with a new one...", uri
         @denied_proxies << proxy unless @denied_proxies.include?(proxy)
         sleep(5)
         retry unless attempts >= options[:max_attempts]
@@ -57,7 +60,7 @@ module Crawler
         GC.start
         return body
       rescue Exception => e
-        error_logger "\n#{ uri } (#{ attempts += 1 }/#{ options[:max_attempts] }) \n\t#{ e.to_s }. Trying again..."
+        error_logger "\n#{ uri } (#{ attempts += 1 }/#{ options[:max_attempts] }) \n\t#{ e.to_s }. Trying again...", uri
         sleep(5)
         retry unless attempts >= options[:max_attempts]
       end
@@ -120,19 +123,24 @@ module Crawler
         @denied_proxies = []
         @proxy_list = []
 
-        # get from http://www.checkedproxylists.com/
+        # source: http://www.hidemyass.com/
+        HideMyAss.proxies.each do |proxy|
+          @proxy_list << URI.parse("http://#{ proxy[:host] }:#{ proxy[:port] }")
+        end
+
+        # source: http://www.checkedproxylists.com/
         CSV.open("#{ Rails.root }/config/proxylist.csv", col_sep: ';').each do |row|
           next if row[3] == 'true'
           ip = row[0].strip
           port = row[1].to_i
           url = "http://#{ ip }:#{ port }"
           begin
-            URI.parse(url)
-            @proxy_list << url
+            @proxy_list << URI.parse(url)
           rescue
           end
         end
 
+        # source: http://www.vpngeeks.com
         file = open('http://www.vpngeeks.com/proxylist.php?country=0&port=&speed%5B%5D=2&speed%5B%5D=3&anon%5B%5D=1&anon%5B%5D=2&anon%5B%5D=3&type%5B%5D=1&conn%5B%5D=1&conn%5B%5D=2&conn%5B%5D=3&sort=1&order=1&rows=800&search=Find+Proxy')
         doc = Nokogiri::HTML(file)
         file.close
@@ -142,21 +150,24 @@ module Crawler
           port = tr.css('td')[1].content.to_i
           url = "http://#{ ip }:#{ port }"
           begin
-            URI.parse(url)
-            @proxy_list << url
+            @proxy_list << URI.parse(url)
           rescue
           end
         end
 
-        @proxy_list.uniq!
+        @proxy_list.compact.uniq!
       end
 
       return (@proxy_list - @denied_proxies.to_a).sample
     end
 
-    def error_logger(msg)
-      @error_logger ||= Logger.new("#{ Rails.root }/log/crawler_error.log")
-      @error_logger << msg
+    def error_logger(msg, url=nil)
+      logger = if url.present?
+        Logger.new("#{ Rails.root }/log/#{ PublicSuffix.parse(URI.parse(url.to_s).host).sld }.crawler.log")
+      else
+        Logger.new("#{ Rails.root }/log/crawler_error_teste.log")
+      end
+      logger << msg
     end
 
     def user_agent

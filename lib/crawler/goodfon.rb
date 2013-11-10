@@ -49,7 +49,11 @@ module Crawler
     def parse_tags(page)
       page.xpath('/html/body/div[1]/div[9]/div[3]/div/div/a').map do |tag|
         next if tag.content.blank?
-        Tag.where(name: tag.content.downcase).first_or_create
+        begin
+          Tag.where(name: tag.content.downcase).lock(true).first_or_create
+        rescue ActiveRecord::RecordNotUnique
+          retry
+        end
       end.compact.uniq
     end
   end

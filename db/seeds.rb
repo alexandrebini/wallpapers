@@ -13,7 +13,7 @@ YAML.load_file("#{ Rails.root }/db/seeds.yml").each do |attrs|
     source_url: attrs[:source_url],
     image_src: attrs[:image_src],
     tags: attrs[:tags].map do |name|
-      Tag.find_or_create_by_name(name)
+      Tag.where(name: name).first_or_create
     end,
     image: image,
     image_file_name: File.basename(attrs[:image_src]),

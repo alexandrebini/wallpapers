@@ -74,8 +74,7 @@ module Crawler
     def open_url(url, options={})
       default_options = { verification_matcher: self.source.verification_matcher, proxy: false }
       options.merge!(default_options)
-      @url_opener ||= Crawler::UrlOpener.new
-      @url_opener.open_url(url, options)
+      Crawler::UrlOpener.instance.open_url(url, options)
     end
 
     def slice_size(array)
