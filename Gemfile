@@ -19,6 +19,7 @@ gem 'nokogiri', '1.5.10'
 gem 'hidemyass', '0.2.0'
 gem 'public_suffix', '1.3.1'
 gem 'sidekiq', '2.16.1'
+gem 'sidekiq-middleware', '0.1.4'
 gem 'settingslogic', '2.0.9'
 
 gem 'paperclip', '3.5.2'
