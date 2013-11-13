@@ -14,4 +14,3 @@ Thumbs.db
 tmp/*
 vendor/cache
 vendor/gem
-Gemfile.lock
