@@ -5,7 +5,12 @@ module Crawler
     acts_as_crawler
 
     def source
-      @source ||= Source.where(name: 'HDWallpapers', url: 'http://www.hdwallpapers.in', verification_matcher: 'UA-5746983-2').first_or_create
+      @source ||= Source.where(
+        name: 'HDWallpapers',
+        url: 'http://www.hdwallpapers.in',
+        start_url: 'http://www.hdwallpapers.in',
+        verification_matcher: 'UA-5746983-2'
+      ).first_or_create
     end
 
     def pages_urls(page)
@@ -13,7 +18,7 @@ module Crawler
       total_pages = pages[pages.count-2].content.to_i
 
       Array.new.tap do |pages|
-        pages << source.url
+        pages << source.start_url
         2.upto(total_pages).each do |page|
           pages << "#{ source.url }/latest_wallpapers/page/#{ page }"
         end

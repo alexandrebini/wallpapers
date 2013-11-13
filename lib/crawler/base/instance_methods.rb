@@ -10,7 +10,7 @@ module Crawler
       @count = 0
       @threads_number = 20
 
-      page = Nokogiri::HTML(open_url send(self.crawler_options[:source]).url)
+      page = Nokogiri::HTML(open_url send(self.crawler_options[:source]).start_url)
       get_pages(page)
       finalize!
       self

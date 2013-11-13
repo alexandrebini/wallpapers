@@ -1,61 +1,48 @@
 module Crawler
   class Interfacelift
-    def initialize
-      super(
-        home_url: 'http://interfacelift.com/',
+    extend Crawler::ActMacro
+
+    acts_as_crawler
+
+    def source
+      @source ||= Source.where(
+        name: 'InterfaceLIFT',
+        url: 'http://interfacelift.com',
+        start_url: 'http://interfacelift.com/wallpaper/downloads/date/any/',
         verification_matcher: 'ca-pub-3902458398606385'
-      )
+      ).first_or_create
     end
 
-    def get_listing_pages(page)
-      first_page = 'http://interfacelift.com/wallpaper/downloads/date/any/'
-      page = Nokogiri::HTML(open_url first_page)
+    def pages_urls(page)
+      pagination = page.css('div.pagenums_bottom a.selector')
+      total_pages = pagination[pagination.count-2].content.to_i
 
-      pages = page.css('div.pagenums_bottom a.selector')
-      total_pages = pages[pages.count-2].content.to_i
-
-      @listing_pages << first_page
-      2.upto(total_pages).each do |page|
-        @listing_pages << "#{ @home_url }/wallpaper/downloads/date/any/index#{ page }.html"
+      Array.new.tap do |pages|
+        pages << source.start_url
+        2.upto(total_pages).each do |page|
+          pages << "#{ source.url }/wallpaper/downloads/date/any/index#{ page }.html"
+        end
       end
-
-      super(page)
     end
 
-    def crawl_listing_page(url)
-      page = super(url)
-      links = page.css('div.item div.preview a').map do |link|
+    def wallpapers_urls(page)
+      page.css('div.item div.preview a').map do |link|
         if link.attr(:href).match('http://')
           link.attr(:href)
         else
-          "#{ @home_url }#{ link.attr(:href) }"
+          "#{ source.url }#{ link.attr(:href) }"
         end
       end
-      crawl_wallpapers(links)
-    rescue Exception => e
-      fail_log "\n#{ url }\t#{ e.to_s }\n"
     end
 
-    def crawl_wallpaper(url)
-      log "\ncrawling wallpaper #{ @count += 1 }/#{ @total } from #{ url }"
-      page = Nokogiri::HTML(open_url url)
-
-      image_src = parse_image(page)
-      return if Wallpaper.where(image_src: image_src).exists?
-
-      wallpaper = Wallpaper.create(
-        image_src: image_src,
-        source: parse_source,
-        source_url: url,
-        tags: parse_tags(page),
-        title: parse_title(page)
+    def parse_wallpaper(options)
+      Wallpaper.create(
+        image_src: options[:image_src],
+        source: source,
+        source_url: options[:url],
+        tags: parse_tags(options[:page]),
+        title: parse_title(options[:page])
       )
-    rescue Exception => e
-      fail_log "\n#{ url }\t#{ e.to_s }\n"
-    end
-
-    def parse_source
-      @source ||= Source.where(name: 'InterfaceLIFT', url: 'http://interfacelift.com').first_or_create
     end
 
     def parse_title(page)
@@ -64,34 +51,36 @@ module Crawler
 
     def parse_tags(page)
       page.css('.jeder p a').map do |tag|
-        if tag.attr(:href).match(/tags/)
-          next if tag.content.blank?
-          name = tag.content.gsub(' »', '').downcase.strip
-          Tag.find_or_create_by_name(name)
+        next unless tag.attr(:href).match(/tags/)
+        next if tag.content.blank?
+
+        name = tag.content.gsub(' »', '').downcase.strip
+        begin
+          Tag.where(name: name).first_or_create
+        rescue ActiveRecord::RecordNotUnique
+          retry
         end
       end.compact.uniq
     end
 
-    def parse_image(page)
-      # find max resolution
-      max_resolution = { width: 0, height: 0, size: nil }
-      page.css('div.download select option').map do |option|
-        resolution = option.content.match(/([0-9]*)x([0-9]*)/).to_s.split('x')
+    def parse_image(options)
+      resolutions = options[:page].css('div.download select option').map do |option|
+        resolution = option.content.match(/([0-9]*)x([0-9]*)/).to_s
         next if resolution.blank?
-        width = resolution.first.to_i
-        height = resolution.last.to_i
-        if width > max_resolution[:width]
-          max_resolution = { width: width, height: height, size: "#{ width }x#{ height }"}
-        end
-      end
 
-      # get the url from preview
-      # http://interfacelift.com/wallpaper/previews/03165_sunsetcliffs.jpg
-      # http://interfacelift.com/wallpaper/D47cd523/03165_sunsetcliffs_1440x900.jpg
-      preview_url = page.css('link[rel="image_src"]').first.attr(:href)
-      extension = File.extname(preview_url)
-      preview_url.gsub('previews', 'D47cd523').
-        gsub(extension, "_#{ max_resolution[:size] }#{ extension }")
+        # get the url from preview
+        # http://interfacelift.com/wallpaper/previews/03165_sunsetcliffs.jpg
+        # http://interfacelift.com/wallpaper/D47cd523/03165_sunsetcliffs_1440x900.jpg
+        preview_url = options[:page].css('link[rel="image_src"]').first.attr(:href)
+        extension = File.extname(preview_url)
+        preview_url.gsub('previews', '7yz4ma1').
+          gsub(extension, "_#{ resolution }#{ extension }")
+      end.compact.uniq
+
+      ['1204x768', '1280x800', '1280x960', ''].each do |preferred_resolution|
+        resolution = resolutions.find{ |url| url.match(preferred_resolution) }
+        return resolution unless resolution.blank?
+      end
     end
   end
 end

@@ -5,14 +5,19 @@ module Crawler
     acts_as_crawler
 
     def source
-      @source ||= Source.where(name: 'GoodFon', url: 'http://www.goodfon.com', verification_matcher: 'Wfwlp7OYsTa-e2sWDO8BDZUvVReSFI42Dnr3RPNoeTQ').first_or_create
+      @source ||= Source.where(
+        name: 'GoodFon',
+        url: 'http://www.goodfon.com',
+        start_url: 'http://www.goodfon.com',
+        verification_matcher: 'Wfwlp7OYsTa-e2sWDO8BDZUvVReSFI42Dnr3RPNoeTQ'
+      ).first_or_create
     end
 
     def pages_urls(page)
       total_pages = page.css('.pageinfoen div').first.content.to_i
 
       Array.new.tap do |pages|
-        pages << @source.url
+        pages << @source.start_url
         2.upto(total_pages).each do |page|
           pages << "#{ source.url }/index-#{ page }.html"
         end

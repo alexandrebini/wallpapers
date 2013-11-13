@@ -3,6 +3,7 @@ class CreateSources < ActiveRecord::Migration
     create_table :sources, options: 'engine=MyISAM DEFAULT CHARSET=utf8' do |t|
       t.string :name
       t.string :url
+      t.string :start_url
       t.text :verification_matcher
     end
     add_index :sources, :name, unique: true

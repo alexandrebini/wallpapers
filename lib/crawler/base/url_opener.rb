@@ -33,22 +33,36 @@ module Crawler
     end
 
     def open_url_with_proxy(uri, options={})
-      @denied_proxies ||= []
       attempts = 0
       begin
-        proxy_uri = URI.parse(proxy)
-        http = Net::HTTP::Proxy(proxy_uri.host, proxy_uri.port).start(uri.host)
-        body = response_is_valid?(http, uri, options)
-        raise "Body is nil" if body.blank?
-        return body
+        response = HideMyAss.get(uri.to_s)
+        if body_is_valid?(response, uri, options)
+          return response.body
+        else
+          raise "Body is nil" if body.blank?
+        end
       rescue Exception => e
-        error_logger "\n#{ uri } (#{ attempts += 1 }/#{ options[:max_attempts] }) \n\t#{ e.to_s }. Proxy #{ proxy } marked as denied, trying again with a new one...", uri
-        @denied_proxies << proxy unless @denied_proxies.include?(proxy)
+        error_logger "\n#{ uri } (#{ attempts += 1 }/#{ options[:max_attempts] }) \n\t#{ e.to_s }.", uri
         sleep(5)
         retry unless attempts >= options[:max_attempts]
       end
-    ensure
-      http.finish rescue nil
+
+    #   @denied_proxies ||= []
+    #   attempts = 0
+    #   begin
+    #     proxy_uri = URI.parse(proxy)
+    #     http = Net::HTTP::Proxy(proxy_uri.host, proxy_uri.port).start(uri.host)
+    #     body = response_is_valid?(http, uri, options)
+    #     raise "Body is nil" if body.blank?
+    #     return body
+    #   rescue Exception => e
+    #     error_logger "\n#{ uri } (#{ attempts += 1 }/#{ options[:max_attempts] }) \n\t#{ e.to_s }. Proxy #{ proxy } marked as denied, trying again with a new one...", uri
+    #     @denied_proxies << proxy unless @denied_proxies.include?(proxy)
+    #     sleep(5)
+    #     retry unless attempts >= options[:max_attempts]
+    #   end
+    # ensure
+    #   http.finish rescue nil
     end
 
     def open_url_without_proxy(uri, options)
@@ -75,7 +89,10 @@ module Crawler
       response = http.request(request)
       http.finish
 
-      if response.kind_of?(Net::HTTPSuccess) && body_is_valid?(response, uri, options)
+      case
+      when [301, 302].include?(response.code.to_i) && response['location'] && response['location'] != uri.to_s
+        return open_url_without_proxy(URI.parse(response['location']), options)
+      when response.kind_of?(Net::HTTPSuccess) && body_is_valid?(response, uri, options)
         return response.body
       else
         return nil
@@ -94,7 +111,7 @@ module Crawler
         response.body.bytesize < options[:min_size]
 
       # validate the content-length
-      return false if response['content-length'] &&
+      return false if response.respond_to?('[]') && response['content-length'] &&
         response['content-length'].to_i < response.body.bytesize
 
       # use jpeginfo to check corrupted files
@@ -115,51 +132,51 @@ module Crawler
       end
     end
 
-    def proxy
-      available_proxies = (@proxy_list.to_a - @denied_proxies.to_a)
+    # def proxy
+    #   available_proxies = (@proxy_list.to_a - @denied_proxies.to_a)
 
-      if @proxy_list.nil? || available_proxies.size == 0
-        error_logger "\nGetting a new proxy list..."
-        @denied_proxies = []
-        @proxy_list = []
+    #   if @proxy_list.nil? || available_proxies.size == 0
+    #     error_logger "\nGetting a new proxy list..."
+    #     @denied_proxies = []
+    #     @proxy_list = []
 
-        # source: http://www.hidemyass.com/
-        HideMyAss.proxies.each do |proxy|
-          @proxy_list << URI.parse("http://#{ proxy[:host] }:#{ proxy[:port] }")
-        end
+    #     # source: http://www.hidemyass.com/
+    #     HideMyAss.proxies.each do |proxy|
+    #       @proxy_list << URI.parse("http://#{ proxy[:host] }:#{ proxy[:port] }")
+    #     end
 
-        # source: http://www.checkedproxylists.com/
-        CSV.open("#{ Rails.root }/config/proxylist.csv", col_sep: ';').each do |row|
-          next if row[3] == 'true'
-          ip = row[0].strip
-          port = row[1].to_i
-          url = "http://#{ ip }:#{ port }"
-          begin
-            @proxy_list << URI.parse(url)
-          rescue
-          end
-        end
+    #     # source: http://www.checkedproxylists.com/
+    #     CSV.open("#{ Rails.root }/config/proxylist.csv", col_sep: ';').each do |row|
+    #       next if row[3] == 'true'
+    #       ip = row[0].strip
+    #       port = row[1].to_i
+    #       url = "http://#{ ip }:#{ port }"
+    #       begin
+    #         @proxy_list << URI.parse(url)
+    #       rescue
+    #       end
+    #     end
 
-        # source: http://www.vpngeeks.com
-        file = open('http://www.vpngeeks.com/proxylist.php?country=0&port=&speed%5B%5D=2&speed%5B%5D=3&anon%5B%5D=1&anon%5B%5D=2&anon%5B%5D=3&type%5B%5D=1&conn%5B%5D=1&conn%5B%5D=2&conn%5B%5D=3&sort=1&order=1&rows=800&search=Find+Proxy')
-        doc = Nokogiri::HTML(file)
-        file.close
+    #     # source: http://www.vpngeeks.com
+    #     file = open('http://www.vpngeeks.com/proxylist.php?country=0&port=&speed%5B%5D=2&speed%5B%5D=3&anon%5B%5D=1&anon%5B%5D=2&anon%5B%5D=3&type%5B%5D=1&conn%5B%5D=1&conn%5B%5D=2&conn%5B%5D=3&sort=1&order=1&rows=800&search=Find+Proxy')
+    #     doc = Nokogiri::HTML(file)
+    #     file.close
 
-        doc.css('table tr.tr_style2, table tr.tr_style1').map do |tr|
-          ip = tr.css('td')[0].content.gsub('\n', '').strip
-          port = tr.css('td')[1].content.to_i
-          url = "http://#{ ip }:#{ port }"
-          begin
-            @proxy_list << URI.parse(url)
-          rescue
-          end
-        end
+    #     doc.css('table tr.tr_style2, table tr.tr_style1').map do |tr|
+    #       ip = tr.css('td')[0].content.gsub('\n', '').strip
+    #       port = tr.css('td')[1].content.to_i
+    #       url = "http://#{ ip }:#{ port }"
+    #       begin
+    #         @proxy_list << URI.parse(url)
+    #       rescue
+    #       end
+    #     end
 
-        @proxy_list.compact.uniq!
-      end
+    #     @proxy_list.compact.uniq!
+    #   end
 
-      return (@proxy_list - @denied_proxies.to_a).sample
-    end
+    #   return (@proxy_list - @denied_proxies.to_a).sample
+    # end
 
     def error_logger(msg, url=nil)
       logger = if url.present?
@@ -167,6 +184,7 @@ module Crawler
       else
         Logger.new("#{ Rails.root }/log/crawler_error_teste.log")
       end
+      puts msg
       logger << msg
     end
 
