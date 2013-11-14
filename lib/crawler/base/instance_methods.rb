@@ -82,13 +82,13 @@ module Crawler
     end
 
     def log(args)
-      @logger ||= Logger.new("#{ Rails.root }/log/#{ self.source.name.downcase }.log")
+      @logger ||= Logger.new("#{ Rails.root }/log/#{ self.source.slug }.log")
       @logger << args
       puts args
     end
 
     def fail_log(args)
-      @fail_logger ||= Logger.new("#{ Rails.root }/log/#{ self.source.name.downcase }.fail.log")
+      @fail_logger ||= Logger.new("#{ Rails.root }/log/#{ self.source.slug }.fail.log")
       @fail_logger << args
       @fail_logger << "\n"
     end

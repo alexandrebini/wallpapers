@@ -32,7 +32,7 @@ class Wallpaper < ActiveRecord::Base
   def download_image
     self.status = 'downloading'
     self.save(validate: false)
-    WallpaperDownload.perform_async(id) if image_src
+    worker.perform_async(id) if image_src
   end
 
   def downloading?
@@ -44,6 +44,10 @@ class Wallpaper < ActiveRecord::Base
   end
 
   private
+  def worker
+    Crawler.const_get("#{ source.name.downcase.titleize }::Worker")
+  end
+
   def analyse_colors
     reload
 

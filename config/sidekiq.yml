@@ -1,5 +1,10 @@
 ---
 :pidfile: tmp/pids/sidekiq.pid
+:queues:
+  - [goodfon, 1]
+  - [hdwallpapers, 1]
+  - [interfacelift, 1]
+  - [default, 2]
 development:
   :concurrency: 20
 staging:

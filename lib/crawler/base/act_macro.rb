@@ -24,6 +24,7 @@ module Crawler
       class_attribute :crawler_options
       self.crawler_options = default_options.merge(options)
 
+      include Singleton
       include InstanceMethods
       extend  ClassMethods
     end

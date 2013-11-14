@@ -1,5 +1,3 @@
-require 'singleton'
-
 module Crawler
   class UrlOpener
     include Singleton
