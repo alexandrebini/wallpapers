@@ -1,6 +1,21 @@
 require "#{ Rails.root }/lib/crawler/crawler"
 
 namespace :crawler do
+  desc 'status'
+  task status: :environment do
+    include ActionView::Helpers::NumberHelper
+    sources = Source.all.sort_by{ |r| r.wallpapers.downloaded.count }.reverse
+    sources.each do |source|
+      downloaded = "downloaded: #{ number_with_delimiter source.wallpapers.downloaded.count }"
+      downloading = "downloading: #{ number_with_delimiter source.wallpapers.downloading.count }"
+      pending = "pending: #{ number_with_delimiter source.wallpapers.pending.count }"
+      puts "#{ source.slug.ljust(15) } #{ downloaded.ljust(25) } #{ downloading.ljust(25) } #{ pending.ljust(25) }"
+    end
+    sleep(60)
+    puts
+    redo
+  end
+
   desc 'import all wallpapers'
   task start: :environment do
     [
