@@ -54,7 +54,7 @@ module Crawler
         raise "Body is nil" if body.blank?
         return body
       rescue Exception => e
-        error_logger "\n#{ uri } (#{ attempts += 1 }/#{ options[:max_attempts] }) \n\t#{ e.to_s }\n#{ e.backtrace.join("\n") }. Proxy #{ proxy } marked as denied, trying again with a new one...", uri
+        error_logger "\n#{ uri } (#{ attempts += 1 }/#{ options[:max_attempts] }) \n\t#{ e.to_s }\n#{ e.backtrace.join("\n") }. Proxy #{ proxy_uri } marked as denied, trying again with a new one...", uri
         @denied_proxies << proxy unless @denied_proxies.include?(proxy)
         sleep(5)
         retry unless attempts >= options[:max_attempts]
@@ -139,8 +139,12 @@ module Crawler
         @proxy_list = []
 
         # source: http://www.hidemyass.com/
-        HideMyAss.proxies.each do |proxy|
-          @proxy_list << URI.parse("http://#{ proxy[:host] }:#{ proxy[:port] }")
+        begin
+          HideMyAss.proxies.each do |proxy|
+            @proxy_list << URI.parse("http://#{ proxy[:host] }:#{ proxy[:port] }")
+          end
+        rescue
+          error_logger "\nunable to fetch HideMyAss"
         end
 
         # source: http://www.checkedproxylists.com/
