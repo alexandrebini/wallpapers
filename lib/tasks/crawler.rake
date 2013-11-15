@@ -11,6 +11,12 @@ namespace :crawler do
       pending = "pending: #{ number_with_delimiter source.wallpapers.pending.count }"
       puts "#{ source.slug.ljust(15) } #{ downloaded.ljust(25) } #{ downloading.ljust(25) } #{ pending.ljust(25) }"
     end
+
+    downloaded = "downloaded: #{ number_with_delimiter Wallpaper.downloaded.count }"
+    downloading = "downloading: #{ number_with_delimiter Wallpaper.downloading.count }"
+    pending = "pending: #{ number_with_delimiter Wallpaper.pending.count }"
+    puts "#{ 'Total'.ljust(15) } #{ downloaded.ljust(25) } #{ downloading.ljust(25) } #{ pending.ljust(25) }"
+
     sleep(60)
     puts
     redo

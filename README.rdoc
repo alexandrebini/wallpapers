@@ -29,6 +29,13 @@
   find . -name "*jpg" -exec jpeginfo -c {} \; | grep -E "WARNING|ERROR"
   find . -name "*jpg" -exec jpeginfo -c {} \; | grep -E "WARNING|ERROR" | cut -d " " -f 1
 
+# Sidekiq
+  # clear busy
+  Sidekiq.redis do |conn|
+    workers = conn.smembers('workers')
+    conn.srem('workers', workers) if !workers.empty?
+  end
+
 # server
   # info
     mysql root password: XXh3H2ahsr
